@@ -6,7 +6,8 @@ var main = function()
 			$(this).animate(
 			{
 				height: "100%",
-				paddingTop: "12px"
+				paddingTop: "5px",
+				paddingBottom: "5px"
 			}, 200);
 		},
 		function()
@@ -14,7 +15,8 @@ var main = function()
 			$(this).animate(
 			{
 				height: "80%",
-				paddingTop: "8px"
+				paddingTop: "0px",
+				paddingBottom: "0px"
 			}, 200);
 		}
 	);
