@@ -18,7 +18,8 @@ var main = function()
 			{
 				top: "+=5%"
 			}, 100);
-		});
+		}
+	);
 }
 
 $(document).ready(main);
