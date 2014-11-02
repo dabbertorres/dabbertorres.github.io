@@ -1,25 +1,24 @@
 var main = function()
 {
+	// set font-size of header title dynamically
+	var fontSize = parseInt($("#header #title").height()) + "px";
+	$("#header #title").css("font-size", fontSize);
+
 	$("#header #menu a").hover(
 		function()
 		{
 			$(this).animate(
 			{
-				height: "100%",
-				paddingTop: "5px",
-				paddingBottom: "5px"
-			}, 200);
+				top: "-=5%"
+			}, 100);
 		},
 		function()
 		{
 			$(this).animate(
 			{
-				height: "80%",
-				paddingTop: "0px",
-				paddingBottom: "0px"
-			}, 200);
-		}
-	);
+				top: "+=5%"
+			}, 100);
+		});
 }
 
 $(document).ready(main);
