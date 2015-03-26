@@ -29,7 +29,7 @@ html, body
 	width: 100%;
 
 	margin: 0px;
-	padding: 0.1em;
+	padding: 0.25em;
 
 	box-sizing: border-box;
 
@@ -50,7 +50,7 @@ html, body
 	width: 100%;
 
 	margin: 0px;
-	padding: 0.5em;
+	padding: 0.25em;
 }
 
 #header #menu a
@@ -65,7 +65,7 @@ html, body
 
 	float: left;
 
-	border: 0.1em solid black;
+	border: 1px solid black;
 	background: #B8B8B8;
 
 	box-sizing: border-box;
