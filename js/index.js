@@ -2,7 +2,7 @@ var main = function()
 {
 	// set font-size of header title dynamically
 	var title = $("#header #title");
-	var titleFontSize = (parseInt(title.height()) - 2) + "px";
+	var titleFontSize = (parseInt(title.height()) - 1) + "px";
 	title.css("font-size", titleFontSize);
 	
 	var menuButtons = $("#header #menu a");
