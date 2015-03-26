@@ -1,21 +1,22 @@
 html, body
 {
 	background: #59A8CC;
-	margin: 0px;
-	padding: 0px;
 
 	height: 100%;
 	width: 100%;
+	
+	margin: 0px;
+	padding: 0px;
 }
 
 /* header css */
 #header
 {
-	margin: 0px;
-	padding: 0px;
-
 	height: 10%;
 	width: 100%;
+
+	margin: 0px;
+	padding: 0px;
 
 	box-sizing: border-box;
 }
@@ -24,11 +25,11 @@ html, body
 {
 	text-transform: lowercase;
 
-	margin: 0px;
-	padding: 0.5em;
-
 	height: 50%;
 	width: 100%;
+
+	margin: 0px;
+	padding: 0.1em;
 
 	box-sizing: border-box;
 
@@ -45,11 +46,11 @@ html, body
 
 	box-sizing: border-box;
 
-	margin: 0px;
-	padding: 0.5em;
-
 	height: 50%;
 	width: 100%;
+
+	margin: 0px;
+	padding: 0.5em;
 }
 
 #header #menu a
@@ -69,12 +70,12 @@ html, body
 
 	box-sizing: border-box;
 
+	height: 80%;
+	width: 5%;
+
 	margin: 0px;
 	margin-right: 0.5em;
 	padding: 0px;
-
-	height: 80%;
-	width: 5%;
 
 	line-height: 150%;
 
@@ -87,11 +88,11 @@ html, body
 
 #content
 {
-	margin: 0px;
-	padding: 1em;
-
 	width: 80%;
 	height: 80%;
+	
+	margin: 0px;
+	padding: 1em;
 }
 
 #content ul
