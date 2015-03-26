@@ -6,7 +6,7 @@ var main = function()
 	title.css("font-size", titleFontSize);
 	
 	var menuButtons = $("#header #menu a");
-	var menuButtonFontSize = (parseInt(menuButtons.height()) - 2) + "px";
+	var menuButtonFontSize = (parseInt(menuButtons.height()) - 4) + "px";
 	menuButtons.css("font-size", menuButtonFontSize);
 
 	$("#header #menu a").hover(
