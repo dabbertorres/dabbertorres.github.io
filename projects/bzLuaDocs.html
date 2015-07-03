@@ -192,6 +192,8 @@ object. Use a handle of none or nil to stop a global 2D sound.</p>
 
 <h3>string GetOdf ( handle h )</h3>
 <p>Returns the odf name of the game object. Returns nil if none exists.</p>
+<p>Note: currently returns a string of length 8, so that string will have garbage characters on the end.</p>
+<p>Fix: string.sub(GetOdf(h), 1, 6)</p>
 
 <h3>string GetBase ( handle h )</h3>
 <p>Returns the base config of the game object which determines what VDF/SDF model it uses. Returns nil if none exists.</p>
