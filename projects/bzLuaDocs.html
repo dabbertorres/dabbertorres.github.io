@@ -168,19 +168,19 @@ object. Use a handle of none or nil to stop a global 2D sound.</p>
 <h3>handle GetHandle ( string label )</h3>
 <p>Returns the handle of the game object with the given label. Returns nil if none exists.</p>
 
-<h3>handle BuildObject ( string odfname, integer teameam, handle h )</h3>
+<h3>handle BuildObject ( string odfname, integer teamnum, handle h )</h3>
 <p>Creates a game object with the given odf name and team number at the location of a game object.</p>
 <p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
 
-<h3>handle BuildObject ( string odfname, integer teameam, string path, [ integer point ] )</h3>
+<h3>handle BuildObject ( string odfname, integer teamnum, string path, [ integer point ] )</h3>
 <p>Creates a game object with the given odf name and team number at a point on the named path. It uses the start of the path if no point is given.</p>
 <p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
 
-<h3>handle BuildObject ( string odfname, integer teameam, vector position )</h3>
+<h3>handle BuildObject ( string odfname, integer teamnum, vector position )</h3>
 <p>Creates a game object with the given odf name and team number at the given position vector.</p>
 <p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
 
-<h3>handle BuildObject ( string odfname, integer teameam, matrix transform )</h3>
+<h3>handle BuildObject ( string odfname, integer teamnum, matrix transform )</h3>
 <p>Creates a game object with the given odf name and team number with the given transform matrix.</p>
 <p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
 
@@ -303,8 +303,8 @@ hard-coded exception that uses "a" instead of "p".</p>
 <h3>vector GetVelocity ( handle h )</h3>
 <p>Returns the game object's linear velocity vector. Returns nil if none exists.</p>
 
-<h3>vector SetVelocity ( handle h )</h3>
-<p>Sets the game object's angular velocity vector. </p>
+<h3>void SetVelocity ( handle h, vector v )</h3>
+<p>Sets the game object's linear velocity vector. </p>
 
 <h3>vector GetOmega ( handle h )</h3>
 <p>Returns the game object's angular velocity vector. Returns nil if none exists.</p>
