@@ -154,12 +154,6 @@ a:active
 	display: block;
 }
 
-.collapse:hover
-{
-	cursor: pointer;
-	cursor: hand;
-}
-
 .collapse + input
 {
 	display: none;
@@ -170,7 +164,13 @@ a:active
 	display: none;
 }
 
-.collapse+ input:checked + *
+.collapse + input:checked + *
 {
 	display: block;
+}
+
+.collapse:hover
+{
+	cursor: pointer;
+	cursor: hand;
 }
