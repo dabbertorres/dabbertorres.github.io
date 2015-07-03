@@ -154,6 +154,11 @@ a:active
 	display: block;
 }
 
+.collapse: hover
+{
+	cursor: pointer;
+}
+
 .collapse + input
 {
 	display: none;
