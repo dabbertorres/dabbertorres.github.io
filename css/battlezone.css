@@ -154,9 +154,10 @@ a:active
 	display: block;
 }
 
-.collapse: hover
+.collapse:hover
 {
 	cursor: pointer;
+	cursor: hand;
 }
 
 .collapse + input
