@@ -1126,6 +1126,7 @@ frequently, save the handle into a global variable to prevent it from closing.</
 
 <h3>number, vector GetTerrainHeightAndNormal ( handle h )</h3>
 <p>Returns the terrain height and normal vector at the location of the game object.</p>
+<p>Does not seem to be working at the moment. Use GetFloorHeightAndNormal(GetPosition(h)) as a workaround.</p>
 
 <h3>number, vector GetTerrainHeightAndNormal ( string path [, integer point ] )</h3>
 <p>Returns the terrain height and normal vector at a point on the named path. It uses the start of the path if no point is given.</p>
@@ -1144,6 +1145,7 @@ frequently, save the handle into a global variable to prevent it from closing.</
 
 <h3>number, vector GetFloorHeightAndNormal ( handle h )</h3>
 <p>Returns the floor height and normal vector at the location of the game object.</p>
+<p>Does not seem to be working at the moment. Use GetFloorHeightAndNormal(GetPosition(h)) as a workaround.</p>
 
 <h3>number, vector GetFloorHeightAndNormal ( string path [, integer point ] )</h3>
 <p>Returns the floor height and normal vector at a point on the named path. It uses the start of the path if no point is given.</p>
