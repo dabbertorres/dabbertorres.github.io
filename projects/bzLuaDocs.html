@@ -1,8 +1,27 @@
 <!DOCTYPE html>
-<html lang="en"><script type="text/javascript">window["_gaUserPrefs"] = { ioo : function() { return true; } }</script><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta charset="utf-8">
-<title>Battlezone Lua Script Utility Functions</title>
-<link rel="stylesheet" type="text/css" media="screen" href="../css/battlezone.css">
+<html lang="en">
+<script type="text/javascript">window["_gaUserPrefs"] = { ioo : function() { return true; } }</script>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<title>Battlezone Lua Script Utility Functions</title>
+	<link rel="stylesheet" type="text/css" media="screen" href="../css/battlezone.css">
+
+	<script>
+		var isCollapsed = true;
+
+		function toggleAll()
+		{
+			var inputs = document.getElementsByTagName("input");
+
+			for(var i = 0; i < inputs.length; ++i)
+			{
+				inputs[i].checked = isCollapsed;
+			}
+
+			isCollapsed = !isCollapsed;
+		}
+	</script>
 </head>
 <body>
 
@@ -10,1275 +29,1901 @@
 <p>Version 1.5.2.27</p>
 <p>Document Revised 2015-07-03</p>
 
-<p>This document describes the global script utility functions available for user-created Lua mission scripts. They offer the same functionality that the original designers used when creating the single-player campaign, along with new functionality back-ported from 
-<em>Battlezone II: Combat Commander</em> or added to fill notable gaps.</p>
-  
-<label class="collapse" for="_1">Globals</label>
-<input id="_1" type="checkbox">
+<p>This document describes the global script utility functions available for user-created Lua mission scripts. They offer the same functionality that the original designers used when creating the single-player campaign, along with new functionality back-ported from <em>Battlezone II: Combat Commander</em> or added to fill notable gaps.</p>
+
+<input type="button" value="Toggle Collapse All" onclick="toggleAll()">
+
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Globals">Globals</label>
+<input id="Globals" type="checkbox">
 <div>
-<h3>string GameVersion</h3>
-<p>Contains current build version (e.g. "1.5.2.25")</p>
-
-<h3>string LastGameKey</h3>
-<p>Contains the most recently pressed game key (e.g. "Ctrl+Z")</p>
-</div>
-  
-<label class="collapse" for="_2">Script Event Handlers</label>
-<input id="_2" type="checkbox">
-<div>
-<p>The Lua scripting system calls these script-defined functions when various script events occur. LuaMission looks up the functions by name so they can have different functions assigned to them at runtime.</p>
-
-<h3>Load ( ... )</h3>
-<p>Called when loading state from a save game file, allowing the script to restore its state.</p>
-<p>Data values returned from Save will be passed as parameters to Load in the same order they were returned. Load supports nil, boolean, handle, integer, number, string, vector, and matrix data types. It does not support function, thread, or arbitrary userdata types.</p>
-<p>The console window will print the loaded values in human-readable format.</p>
-
-<h3>... Save ()</h3>
-<p>Called when saving state to a save game file, allowing the script to preserve its state.</p>
-<p>Any values returned by this function will be passed as parameters to Load when loading the save game file. Save supports nil, boolean, handle, integer, number, string, vector, and matrix data types. It does not support function, thread, or arbitrary userdata types.</p>
-<p>The console window will print the saved values in human-readable format.</p>
-
-<h3>Start ()</h3>
-<p>Called when the mission starts for the first time.</p>
-<p>Use this function to perform any one-time script initialization.</p>
-
-<h3>GameKey ( string key )</h3>
-<p>Called any time a game key is pressed.</p>
-<p>Key is a string that consisting of zero or more modifiers (Ctrl, Shift, Alt) and a base key.</p>
-<p>The base key for keys corresponding to a printable ASCII character is the upper-case version of that character.</p>
-<p>The base key for other keys is the label on the keycap (e.g. PageUp, PageDown, Home, End, Backspace, and so forth).</p>
-
-<h3>Update ( number timestep )</h3>
-<p>Called once per frame after updating the network system and before simulating game objects.</p>
-<p>This function performs most of the mission script's game logic.</p>
-
-<h3>CreateObject ( handle h )</h3>
-<p>Called after any game object is created.</p>
-<p>Handle is the game object that was created.</p>
-<p>This function will get a lot of traffic so it should not do too much work.</p>
-
-<h3>AddObject ( handle h )</h3>
-<p>Called when a game object gets added to the mission</p>
-<p>Handle is the game object that was added</p>
-<p>This function is normally called for "important" game objects, and excludes things like Scrap pieces.</p>
-
-<h3>DeleteObject ( handle h )</h3>
-<p>Called before a game object is deleted.</p>
-<p>Handle is the game object to be deleted.</p>
-<p>This function will get a lot of traffic so it should not do too much work.</p>
-
-<h3>CreatePlayer ( integer id, string name, integer team )</h3>
-<p>Called when a player joins the session.</p>
-<p>Players that join before the host launches trigger CreatePlayer just before the first Update.</p>
-<p>Players that join joining after the host launches trigger CreatePlayer on entering the pre-game lobby.</p>
-<p>This function gets called for the local player.</p>
-
-<h3>AddPlayer ( integer id, string name, integer team )</h3>
-<p>Called when a player starts sending state updates.</p>
-<p>This indicates that a player has finished loaded and started simulating.</p>
-<p>This function is <i>not</i> called for the local player.</p>
-
-<h3>DeletePlayer ( integer id, string name, integer team )</h3>
-<p>Called when a player leaves the session.</p>
-
-<h3>boolean Receive ( integer from, string type, ... )</h3>
-<p>Called when a script-defined message arrives.</p>
-<p>This function should return true if it handled the message and false, nil, or none if it did not.</p>
-<p>From is the network player id of the sender.</p>
-<p>Type is an arbitrary one-character string indicating the script-defined message type.</p>
-<p>Data values passed as parameters to Send will arrive as parameters to Receive in the same order they were sent. Receive supports nil, boolean, handle, integer, number, string, vector, and matrix data types. It does not support function, thread, or arbitrary userdata types.</p>
-
-<h3>boolean Command ( string command, string arguments )</h3>
-<p>Called for any in-game chat command that was not handled by the system, allowing script-defined commands.</p>
-<p>This function should return true if it handled the command and false, nil, or none if it did not.</p>
-<p>LuaMission breaks the command into </p>
-<p>Command is the string immediately following the '/'. For example, the command for "/foo" is "foo".</p>
-<p>Arguments arrive as a string parameter to Command. For example "/foo 1 2 3" would receive "1 2 3".</p>
-<p>The Lua string library provides several functions that can split the string into separate items.</p>
-<p>You can use string.match with captures if you have a specific argument list:</p>
-<blockquote><pre>local foo, bar, baz = string.match(arguments, "(%g+) (%g+) (%g+)")</pre></blockquote>
-<p>You can use string.gmatch, which returns an iterator, if you want to loop through arguments:</p>
-<blockquote><pre>for arg in string.gmatch(arguments, "%g+") do ... end</pre></blockquote>
-<p>Check the Lua <a href="http://lua-users.org/wiki/PatternsTutorial">patterns tutorial</a> and <a href="http://www.lua.org/manual/5.2/manual.html#6.4.1">patterns manual</a> for more details.</p>
+	<div class="function">
+		<h3>string GameVersion</h3>
+		<p>Contains current build version (e.g. "1.5.2.25")</p>
+	</div>
+	<div class="function">
+		<h3>string LastGameKey</h3>
+		<p>Contains the most recently pressed game key (e.g. "Ctrl+Z")</p>
+	</div>
 </div>
 
-<label class="collapse" for="_3">Audio Messages</label>
-<input id="_3" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="ScriptEventHandlers">Script Event Handlers</label>
+<input id="ScriptEventHandlers" type="checkbox">
 <div>
-<p>These functions control audio messages, 2D sounds typically used for radio messages, voiceovers, and narration.</p>
-<p>Audio messages use the Voice Volume setting from the Audio Options menu.</p>
+	<p>The Lua scripting system calls these script-defined functions when various script events occur. LuaMission looks up the functions by name so they can have different functions assigned to them at runtime.</p>
 
-<h3>RepeatAudioMessage ()</h3>
-<p>Repeat the last audio message.</p>
+	<div class="function">
+		<h3>Load ( ... )</h3>
+		<p>Called when loading state from a save game file, allowing the script to restore its state.</p>
+		<p>Data values returned from Save will be passed as parameters to Load in the same order they were returned. Load supports nil, boolean, handle, integer, number, string, vector, and matrix data types. It does not support function, thread, or arbitrary userdata types.</p>
+		<p>The console window will print the loaded values in human-readable format.</p>
+	</div>
 
-<h3>message AudioMessage ( string filename )</h3>
-<p>Plays the given audio file, which must be an uncompressed RIFF WAVE (.WAV) file.</p>
-<p>Returns an audio message handle.</p>
+	<div class="function">
+		<h3>... Save ()</h3>
+		<p>Called when saving state to a save game file, allowing the script to preserve its state.</p>
+		<p>Any values returned by this function will be passed as parameters to Load when loading the save game file. Save supports nil, boolean, handle, integer, number, string, vector, and matrix data types. It does not support function, thread, or arbitrary userdata types.</p>
+		<p>The console window will print the saved values in human-readable format.</p>
+	</div>
 
-<h3>IsAudioMessageDone ( message msg )</h3>
-<p>Returns true if the audio message has stopped. Returns false otherwise.</p>
+	<div class="function">
+		<h3>Start ()</h3>
+		<p>Called when the mission starts for the first time.</p>
+		<p>Use this function to perform any one-time script initialization.</p>
+	</div>
 
-<h3>StopAudioMessage ( message msg )</h3>
-<p>Stops the given audio message.</p>
+	<div class="function">
+		<h3>GameKey ( string key )</h3>
+		<p>Called any time a game key is pressed.</p>
+		<p>Key is a string that consisting of zero or more modifiers (Ctrl, Shift, Alt) and a base key.</p>
+		<p>The base key for keys corresponding to a printable ASCII character is the upper-case version of that character.</p>
+		<p>The base key for other keys is the label on the keycap (e.g. PageUp, PageDown, Home, End, Backspace, and so forth).</p>
+	</div>
 
-<h3>boolean IsAudioMessagePlaying ()</h3>
-<p>Returns true if <em>any</em> audio message is playing. Returns false otherwise.</p>
+	<div class="function">
+		<h3>Update ( number timestep )</h3>
+		<p>Called once per frame after updating the network system and before simulating game objects.</p>
+		<p>This function performs most of the mission script's game logic.</p>
+	</div>
+
+	<div class="function">
+		<h3>CreateObject ( handle h )</h3>
+		<p>Called after any game object is created.</p>
+		<p>Handle is the game object that was created.</p>
+		<p>This function will get a lot of traffic so it should not do too much work.</p>
+	</div>
+
+	<div class="function">
+		<h3>AddObject ( handle h )</h3>
+		<p>Called when a game object gets added to the mission</p>
+		<p>Handle is the game object that was added</p>
+		<p>This function is normally called for "important" game objects, and excludes things like Scrap pieces.</p>
+	</div>
+
+	<div class="function">
+		<h3>DeleteObject ( handle h )</h3>
+		<p>Called before a game object is deleted.</p>
+		<p>Handle is the game object to be deleted.</p>
+		<p>This function will get a lot of traffic so it should not do too much work.</p>
+	</div>
+
+	<div class="function">
+		<h3>CreatePlayer ( integer id, string name, integer team )</h3>
+		<p>Called when a player joins the session.</p>
+		<p>Players that join before the host launches trigger CreatePlayer just before the first Update.</p>
+		<p>Players that join joining after the host launches trigger CreatePlayer on entering the pre-game lobby.</p>
+		<p>This function gets called for the local player.</p>
+	</div>
+
+	<div class="function">
+		<h3>AddPlayer ( integer id, string name, integer team )</h3>
+		<p>Called when a player starts sending state updates.</p>
+		<p>This indicates that a player has finished loaded and started simulating.</p>
+		<p>This function is <i>not</i> called for the local player.</p>
+	</div>
+
+	<div class="function">
+		<h3>DeletePlayer ( integer id, string name, integer team )</h3>
+		<p>Called when a player leaves the session.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean Receive ( integer from, string type, ... )</h3>
+		<p>Called when a script-defined message arrives.</p>
+		<p>This function should return true if it handled the message and false, nil, or none if it did not.</p>
+		<p>From is the network player id of the sender.</p>
+		<p>Type is an arbitrary one-character string indicating the script-defined message type.</p>
+		<p>Data values passed as parameters to Send will arrive as parameters to Receive in the same order they were sent. Receive supports nil, boolean, handle, integer, number, string, vector, and matrix data types. It does not support function, thread, or arbitrary userdata types.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean Command ( string command, string arguments )</h3>
+		<p>Called for any in-game chat command that was not handled by the system, allowing script-defined commands.</p>
+		<p>This function should return true if it handled the command and false, nil, or none if it did not.</p>
+		<p>LuaMission breaks the command into </p>
+		<p>Command is the string immediately following the '/'. For example, the command for "/foo" is "foo".</p>
+		<p>Arguments arrive as a string parameter to Command. For example "/foo 1 2 3" would receive "1 2 3".</p>
+		<p>The Lua string library provides several functions that can split the string into separate items.</p>
+		<p>You can use string.match with captures if you have a specific argument list:</p>
+		<blockquote><pre>local foo, bar, baz = string.match(arguments, "(%g+) (%g+) (%g+)")</pre></blockquote>
+		<p>You can use string.gmatch, which returns an iterator, if you want to loop through arguments:</p>
+		<blockquote><pre>for arg in string.gmatch(arguments, "%g+") do ... end</pre></blockquote>
+		<p>Check the Lua <a href="http://lua-users.org/wiki/PatternsTutorial">patterns tutorial</a> and <a href="http://www.lua.org/manual/5.2/manual.html#6.4.1">patterns manual</a> for more details.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_4">Sound Effects</label>
-<input id="_4" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="AudioMessages">Audio Messages</label>
+<input id="AudioMessages" type="checkbox">
 <div>
-<p>These functions control sound effects, either positional 3D sounds attached 
-to objects or global 2D sounds.</p>
-<p>Sound effects use the Effects Volume setting from 
-the Audio Options menu.</p>
+	<p>These functions control audio messages, 2D sounds typically used for radio messages, voiceovers, and narration.</p>
+	<p>Audio messages use the Voice Volume setting from the Audio Options menu.</p>
 
-<h3>StartSound ( string filename, [ Handle h ], [ integer priority ], [ boolean 
-loop ], [ integer volume ], [ integer rate ] )</h3>
-<p>Plays the given audio file, which must be an uncompressed RIFF WAVE (.WAV) 
-file.</p>
-<p>Specifying an object handle creates a 
-positional 3D sound that follows the object as it moves and stops 
-automatically when the object goes away. Otherwise, the sound plays as a 
-global 2D sound.</p>
-<p>Priority ranges from 0 to 100, with higher priorities taking precedence 
-over lower priorities when there are not enough channels. The default 
-priority is 50 if not specified.</p>
-<p>Looping sounds will play forever until explicitly stopped with 
-StopSoundEffect or the object to which it is attached goes away. 
-Non-looping sounds will play once and stop. The default is non-looping if 
-not specified.</p>
-<p>Volume ranges from 0 to 100, with 0 being silent and 100 being maximum 
-volume. The default volume is 100 if not specified.</p>
-<p>Rate overrides the playback rate of the sound file, so a value of 22050 would 
-cause a sound file recorded at 11025 Hz to play back twice as fast. The 
-rate defaults to the file's native rate if not specified.</p>
+	<div class="function">
+		<h3>RepeatAudioMessage ()</h3>
+		<p>Repeat the last audio message.</p>
+	</div>
 
-<h3>StopSound ( string filename, [ Handle h ] )</h3>
-<p>Stops the sound using the given filename and associated with the given 
-object. Use a handle of none or nil to stop a global 2D sound.</p>
+	<div class="function">
+		<h3>message AudioMessage ( string filename )</h3>
+		<p>Plays the given audio file, which must be an uncompressed RIFF WAVE (.WAV) file.</p>
+		<p>Returns an audio message handle.</p>
+	</div>
+
+	<div class="function">
+		<h3>IsAudioMessageDone ( message msg )</h3>
+		<p>Returns true if the audio message has stopped. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>StopAudioMessage ( message msg )</h3>
+		<p>Stops the given audio message.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsAudioMessagePlaying ()</h3>
+		<p>Returns true if <em>any</em> audio message is playing. Returns false otherwise.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_5">Game Object</label>
-<input id="_5" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="SoundEffects">Sound Effects</label>
+<input id="SoundEffects" type="checkbox">
 <div>
-<p>These functions create, manipulate, and query game objects (vehicles, buildings, people, powerups, and scrap) and return or take as a parameter a game object handle.</p><p>
-</p><p>Object handles are always safe to use, even if the game object itself is missing or destroyed.</p>
+	<p>These functions control sound effects, either positional 3D sounds attached to objects or global 2D sounds.</p>
+	<p>Sound effects use the Effects Volume setting from the Audio Options menu.</p>
 
-<h3>handle GetHandle ( string label )</h3>
-<p>Returns the handle of the game object with the given label. Returns nil if none exists.</p>
+	<div class="function">
+		<h3>StartSound ( string filename, [ Handle h ], [ integer priority ], [ boolean loop ], [ integer volume ], [ integer rate ] )</h3>
+		<p>Plays the given audio file, which must be an uncompressed RIFF WAVE (.WAV) file.</p>
+		<p>Specifying an object handle creates a positional 3D sound that follows the object as it moves and stops automatically when the object goes away. Otherwise, the sound plays as a global 2D sound.</p>
+		<p>Priority ranges from 0 to 100, with higher priorities taking precedence over lower priorities when there are not enough channels. The default priority is 50 if not specified.</p>
+		<p>Looping sounds will play forever until explicitly stopped with StopSoundEffect or the object to which it is attached goes away. Non-looping sounds will play once and stop. The default is non-looping if not specified.</p>
+		<p>Volume ranges from 0 to 100, with 0 being silent and 100 being maximum volume. The default volume is 100 if not specified.</p>
+		<p>Rate overrides the playback rate of the sound file, so a value of 22050 would cause a sound file recorded at 11025 Hz to play back twice as fast. The rate defaults to the file's native rate if not specified.</p>
+	</div>
 
-<h3>handle BuildObject ( string odfname, integer teamnum, handle h )</h3>
-<p>Creates a game object with the given odf name and team number at the location of a game object.</p>
-<p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
-
-<h3>handle BuildObject ( string odfname, integer teamnum, string path, [ integer point ] )</h3>
-<p>Creates a game object with the given odf name and team number at a point on the named path. It uses the start of the path if no point is given.</p>
-<p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
-
-<h3>handle BuildObject ( string odfname, integer teamnum, vector position )</h3>
-<p>Creates a game object with the given odf name and team number at the given position vector.</p>
-<p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
-
-<h3>handle BuildObject ( string odfname, integer teamnum, matrix transform )</h3>
-<p>Creates a game object with the given odf name and team number with the given transform matrix.</p>
-<p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
-
-<h3>RemoveObject ( handle h )</h3>
-<p>Removes the game object with the given handle.</p>
-
-<h3>boolean IsOdf ( handle h, string odfname )</h3>
-<p>Returns true if the game object's odf name matches the given odf name. Returns false otherwise.</p>
-
-<h3>string GetOdf ( handle h )</h3>
-<p>Returns the odf name of the game object. Returns nil if none exists.</p>
-<p>Note: currently returns a string of length 8, so that string will have garbage characters on the end.</p>
-<p>Fix: string.sub(GetOdf(h), 1, 6)</p>
-
-<h3>string GetBase ( handle h )</h3>
-<p>Returns the base config of the game object which determines what VDF/SDF model it uses. Returns nil if none exists.</p>
-
-<h3>string GetLabel ( handle h )</h3>
-<p>Returns the label of the game object (e.g. "avtank0_wingman"). Returns nil if none exists.</p>
-
-<h3>string GetClassSig ( handle h )</h3>
-<p>Returns the four-character class signature of the game object (e.g. "WING"). Returns nil if none exists.</p>
-
-<h3>string GetClassLabel ( handle h )</h3>
-<p>Returns the class label of the game object (e.g. "wingman"). Returns nil if none exists.</p>
-
-<h3>integer GetClassId ( handle h )</h3>
-<p>Returns the numeric class identifier of the game object. Returns nil if none exists.</p>
-<p>Looking up the class id number in the AiCommand table will convert it to a string. Looking up the class id string in the AiCommand table will convert it back to a number.</p>
-
-<h3>string GetNation ( handle h )</h3>
-<p>Returns the one-letter nation code of the game object (e.g. "a" for American, 
-"b" for Black Dog, "c" for Chinese, and "s" for Soviet).</p>
-<p>The nation code is usually 
-but not always the same as the first letter of the odf name. The ODF file 
-can override the nation in the [GameObjectClass] section, and player.odf is a 
-hard-coded exception that uses "a" instead of "p".</p>
-<h3>boolean IsValid ( handle h )</h3>
-<p>Returns true if the game object exists. Returns false otherwise.</p>
-
-<h3>boolean IsAlive ( handle h )</h3>
-<p>Returns true if the game object exists and (if the object is a vehicle) controlled. Returns false otherwise.</p>
-
-<h3>boolean IsAliveAndPilot ( handle h )</h3>
-<p>Returns true if the game object exists and (if the object is a vehicle) controlled and piloted. Returns false otherwise.</p>
-
-<h3>boolean IsCraft ( handle h )</h3>
-<p>Returns true if the game object exists and is a vehicle. Returns false otherwise.</p>
-
-<h3>boolean IsBuilding ( handle h )</h3>
-<p>Returns true if the game object exists and is a building. Returns false otherwise.</p>
-
-<h3>boolean IsPerson ( handle h )</h3>
-<p>Returns true if the game object exists and is a person. Returns false otherwise.</p>
-
-<h3>boolean IsDamaged ( handle h [, float threshold] )</h3>
-<p>Returns true if the game object exists and has less health than the threshold. Returns false otherwise.</p>
-
-<h3>integer GetTeamNum ( handle h )</h3>
-<p>Returns the game object's team number.</p>
-
-<h3>SetTeamNum ( handle h, integer team )</h3>
-<p>Sets the game object's team number.</p>
-
-<h3>GetPerceivedTeam ( handle h, teamnum t )</h3>
-<p>Returns the game object's perceived team number (as opposed to its real team).</p>
-<p>The perceived team will differ from the real team when a player enters an empty enemy vehicle without being seen until they attack something.</p>
-
-<h3>SetPerceivedTeam ( handle h, teamnum t )</h3>
-<p>Set the game object's perceived team (as opposed to its real team).</p>
-<p>Units on the game object's perceived team will treat it as friendly until it "blows its cover" by attacking, at which point it will revert to its real team.</p>
-<p>Units on the game object's real team will treat it as friendly regardless of its perceived team.</p>
-
-<h3>SetUserTarget ( handle t)</h3>
-<p>Sets the local player's target.</p>
-
-<h3>handle GetUserTarget ()</h3>
-<p>Returns the local player's target. Returns nil if it has none.</p>
-
-<h3>SetTarget ( handle h, handle t )</h3>
-<p>Sets the game object's target.</p>
-
-<h3>handle GetTarget ( handle h )</h3>
-<p>Returns the game object's target. Returns nil if it has none.</p>
-
-<h3>SetOwner ( handle h, handle o )</h3>
-<p>Sets the game object's owner.</p>
-
-<h3>handle GetOwner ( handle h )</h3>
-<p>Returns the game object's owner. Returns nil if it has none.</p>
-
-<h3>SetPilotClass ( handle h, string odfname )</h3>
-<p>Sets the vehicle's pilot class to the given odf name. This does nothing useful for non-vehicle game objects. An odf name of nil resets the vehicle to the default assignment based on nation.</p>
-
-<h3>string GetPilotClass ( handle h )</h3>
-<p>Returns the odf name of the vehicle's pilot class. Returns nil if none exists.</p>
-
-<h3>SetPosition ( handle h, string path, [ integer point ] )</h3>
-<p>Teleports the game object to a point on the named path. It uses the start of the path if no point is given.</p>
-
-<h3>SetPosition ( handle h, vector position )</h3>
-<p>Teleports the game object to the position vector.</p>
-
-<h3>SetPosition ( handle h, matrix transform )</h3>
-<p>Teleports the game object to the position of the transform matrix.</p>
-
-<h3>vector GetPosition ( handle h )</h3>
-<p>Returns the game object's position vector. Returns nil if none exists.</p>
-
-<h3>vector GetPosition ( string path, [ integer point ] )</h3>
-<p>Returns the path point's position vector. Returns nil if none exists.</p>
-
-<h3>vector GetFront ( handle h )</h3>
-<p>Returns the game object's front vector. Returns nil if none exists.</p>
-
-<h3>SetTransform ( handle h, matrix transform )</h3>
-<p>Teleports the game object to the given transform matrix.</p>
-
-<h3>matrix GetTransform ( handle h )</h3>
-<p>Returns the game object's transform matrix. Returns nil if none exists.</p>
-
-<h3>vector GetVelocity ( handle h )</h3>
-<p>Returns the game object's linear velocity vector. Returns nil if none exists.</p>
-
-<h3>SetVelocity ( handle h, vector v )</h3>
-<p>Sets the game object's linear velocity vector. </p>
-
-<h3>vector GetOmega ( handle h )</h3>
-<p>Returns the game object's angular velocity vector. Returns nil if none exists.</p>
-
-<h3>vector SetOmega ( handle h )</h3>
-<p>Sets the game object's angular velocity vector.</p>
-
-<h3>vector GetCircularPos ( vector center, [ number radius ], [ number angle ] )</h3>
-<p>Returns a ground position offset from the center by the radius in a direction controlled by the angle.</p>
-<p>If no radius is given, it uses a default radius of zero.</p>
-<p>If no angle is given, it uses a default angle of zero.</p>
-<p>An angle of zero is +X (due east), pi * 0.5 is +Z (due north), pi is -X (due west), and pi * 1.5 is -Z (due south).</p>
-
-<h3>vector GetPositionNear ( vector center, [ number minradius ], [ number maxradius ] )</h3>
-<p>Returns a ground position in a ring around the center between minradius and maxradius with roughly the same terrain height as the terrain height at the center.</p>
-<p>This is good for scattering spawn positions around a point while excluding positions that are too high or too low.</p>
-<p>If no radius is given, it uses the default radius of zero.</p>
+	<div class="function">
+		<h3>StopSound ( string filename, [ Handle h ] )</h3>
+		<p>Stops the sound using the given filename and associated with the given object. Use a handle of none or nil to stop a global 2D sound.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_6">Shot</label>
-<input id="_6" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="GameObject">Game Object</label>
+<input id="GameObject" type="checkbox">
 <div>
-<p>These functions query a game object for information about ordnance hits.</p>
+	<p>These functions create, manipulate, and query game objects (vehicles, buildings, people, powerups, and scrap) and return or take as a parameter a game object handle.</p>
+	<p>Object handles are always safe to use, even if the game object itself is missing or destroyed.</p>
 
-<h3>handle GetWhoShotMe ( handle h )</h3>
-<p>Returns who scored the most recent hit on the game object. Returns nil if none exists.</p>
+	<div class="function">
+		<h3>handle GetHandle ( string label )</h3>
+		<p>Returns the handle of the game object with the given label. Returns nil if none exists.</p>
+	</div>
 
-<h3>float GetLastEnemyShot ( handle h )</h3>
-<p>Returns the last time an enemy shot the game object.</p>
+	<div class="function">
+		<h3>handle BuildObject ( string odfname, integer teamnum, handle h )</h3>
+		<p>Creates a game object with the given odf name and team number at the location of a game object.</p>
+		<p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
+	</div>
 
-<h3>float GetLastFriendShot ( handle h )</h3>
-<p>Returns the last time a friend shot the game object.</p>
+	<div class="function">
+		<h3>handle BuildObject ( string odfname, integer teamnum, string path, [ integer point ] )</h3>
+		<p>Creates a game object with the given odf name and team number at a point on the named path. It uses the start of the path if no point is given.</p>
+		<p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle BuildObject ( string odfname, integer teamnum, vector position )</h3>
+		<p>Creates a game object with the given odf name and team number at the given position vector.</p>
+		<p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle BuildObject ( string odfname, integer teamnum, matrix transform )</h3>
+		<p>Creates a game object with the given odf name and team number with the given transform matrix.</p>
+		<p>Returns the handle of the created object if it created one. Returns nil if it failed.</p>
+	</div>
+
+	<div class="function">
+		<h3>RemoveObject ( handle h )</h3>
+		<p>Removes the game object with the given handle.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsOdf ( handle h, string odfname )</h3>
+		<p>Returns true if the game object's odf name matches the given odf name. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>string GetOdf ( handle h )</h3>
+		<p>Returns the odf name of the game object. Returns nil if none exists.</p>
+		<p>Note: currently returns a string of length 8, so that string will have garbage characters on the end.</p>
+		<p>Fix: string.sub(GetOdf(h), 1, 6)</p>
+	</div>
+
+	<div class="function">
+		<h3>string GetBase ( handle h )</h3>
+		<p>Returns the base config of the game object which determines what VDF/SDF model it uses. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>string GetLabel ( handle h )</h3>
+		<p>Returns the label of the game object (e.g. "avtank0_wingman"). Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>string GetClassSig ( handle h )</h3>
+		<p>Returns the four-character class signature of the game object (e.g. "WING"). Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>string GetClassLabel ( handle h )</h3>
+		<p>Returns the class label of the game object (e.g. "wingman"). Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer GetClassId ( handle h )</h3>
+		<p>Returns the numeric class identifier of the game object. Returns nil if none exists.</p>
+		<p>Looking up the class id number in the AiCommand table will convert it to a string. Looking up the class id string in the AiCommand table will convert it back to a number.</p>
+	</div>
+
+	<div class="function">
+		<h3>string GetNation ( handle h )</h3>
+		<p>Returns the one-letter nation code of the game object (e.g. "a" for American, "b" for Black Dog, "c" for Chinese, and "s" for Soviet).</p>
+		<p>The nation code is usually but not always the same as the first letter of the odf name. The ODF file can override the nation in the [GameObjectClass] section, and player.odf is a hard-coded exception that uses "a" instead of "p".</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsValid ( handle h )</h3>
+		<p>Returns true if the game object exists. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsAlive ( handle h )</h3>
+		<p>Returns true if the game object exists and (if the object is a vehicle) controlled. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsAliveAndPilot ( handle h )</h3>
+		<p>Returns true if the game object exists and (if the object is a vehicle) controlled and piloted. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsCraft ( handle h )</h3>
+		<p>Returns true if the game object exists and is a vehicle. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsBuilding ( handle h )</h3>
+		<p>Returns true if the game object exists and is a building. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsPerson ( handle h )</h3>
+		<p>Returns true if the game object exists and is a person. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsDamaged ( handle h [, float threshold] )</h3>
+		<p>Returns true if the game object exists and has less health than the threshold. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer GetTeamNum ( handle h )</h3>
+		<p>Returns the game object's team number.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetTeamNum ( handle h, integer team )</h3>
+		<p>Sets the game object's team number.</p>
+	</div>
+
+	<div class="function">
+		<h3>GetPerceivedTeam ( handle h, teamnum t )</h3>
+		<p>Returns the game object's perceived team number (as opposed to its real team).</p>
+		<p>The perceived team will differ from the real team when a player enters an empty enemy vehicle without being seen until they attack something.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetPerceivedTeam ( handle h, teamnum t )</h3>
+		<p>Set the game object's perceived team (as opposed to its real team).</p>
+		<p>Units on the game object's perceived team will treat it as friendly until it "blows its cover" by attacking, at which point it will revert to its real team.</p>
+		<p>Units on the game object's real team will treat it as friendly regardless of its perceived team.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetUserTarget ( handle t)</h3>
+		<p>Sets the local player's target.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetUserTarget ()</h3>
+		<p>Returns the local player's target. Returns nil if it has none.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetTarget ( handle h, handle t )</h3>
+		<p>Sets the game object's target.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetTarget ( handle h )</h3>
+		<p>Returns the game object's target. Returns nil if it has none.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetOwner ( handle h, handle o )</h3>
+		<p>Sets the game object's owner.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetOwner ( handle h )</h3>
+		<p>Returns the game object's owner. Returns nil if it has none.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetPilotClass ( handle h, string odfname )</h3>
+		<p>Sets the vehicle's pilot class to the given odf name. This does nothing useful for non-vehicle game objects. An odf name of nil resets the vehicle to the default assignment based on nation.</p>
+	</div>
+
+	<div class="function">
+		<h3>string GetPilotClass ( handle h )</h3>
+		<p>Returns the odf name of the vehicle's pilot class. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetPosition ( handle h, string path, [ integer point ] )</h3>
+		<p>Teleports the game object to a point on the named path. It uses the start of the path if no point is given.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetPosition ( handle h, vector position )</h3>
+		<p>Teleports the game object to the position vector.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetPosition ( handle h, matrix transform )</h3>
+		<p>Teleports the game object to the position of the transform matrix.</p>
+	</div>
+
+	<div class="function">
+		<h3>vector GetPosition ( handle h )</h3>
+		<p>Returns the game object's position vector. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>vector GetPosition ( string path, [ integer point ] )</h3>
+		<p>Returns the path point's position vector. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>vector GetFront ( handle h )</h3>
+		<p>Returns the game object's front vector. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetTransform ( handle h, matrix transform )</h3>
+		<p>Teleports the game object to the given transform matrix.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix GetTransform ( handle h )</h3>
+		<p>Returns the game object's transform matrix. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>vector GetVelocity ( handle h )</h3>
+		<p>Returns the game object's linear velocity vector. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetVelocity ( handle h, vector v )</h3>
+		<p>Sets the game object's linear velocity vector. </p>
+	</div>
+
+	<div class="function">
+		<h3>vector GetOmega ( handle h )</h3>
+		<p>Returns the game object's angular velocity vector. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>vector SetOmega ( handle h )</h3>
+		<p>Sets the game object's angular velocity vector.</p>
+	</div>
+
+	<div class="function">
+		<h3>vector GetCircularPos ( vector center, [ number radius ], [ number angle ] )</h3>
+		<p>Returns a ground position offset from the center by the radius in a direction controlled by the angle.</p>
+		<p>If no radius is given, it uses a default radius of zero.</p>
+		<p>If no angle is given, it uses a default angle of zero.</p>
+		<p>An angle of zero is +X (due east), pi * 0.5 is +Z (due north), pi is -X (due west), and pi * 1.5 is -Z (due south).</p>
+	</div>
+
+	<div class="function">
+		<h3>vector GetPositionNear ( vector center, [ number minradius ], [ number maxradius ] )</h3>
+		<p>Returns a ground position in a ring around the center between minradius and maxradius with roughly the same terrain height as the terrain height at the center.</p>
+		<p>This is good for scattering spawn positions around a point while excluding positions that are too high or too low.</p>
+		<p>If no radius is given, it uses the default radius of zero.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_7">Alliances</label>
-<input id="_7" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Shot">Shot</label>
+<input id="Shot" type="checkbox">
 <div>
-<p>These functions control and query alliances between teams.</p>
-<p>The team manager assigns each player a separate team number, starting with 1 and going as high as 15. Team 0 is the neutral "environment" team.</p>
-<p>Unless specifically overridden, every team is friendly with itself, neutral with team 0, and hostile to everyone else.</p>
+	<p>These functions query a game object for information about ordnance hits.</p>
 
-<h3>DefaultAllies ()</h3>
-<p>Sets team alliances back to default.</p>
+	<div class="function">
+		<h3>handle GetWhoShotMe ( handle h )</h3>
+		<p>Returns who scored the most recent hit on the game object. Returns nil if none exists.</p>
+	</div>
 
-<h3>LockAllies ( boolean lock )</h3>
-<p>Sets whether team alliances are locked. Locking alliances prevents players from allying or un-allying, preserving alliances set up by the mission script.</p>
+	<div class="function">
+		<h3>float GetLastEnemyShot ( handle h )</h3>
+		<p>Returns the last time an enemy shot the game object.</p>
+	</div>
 
-<h3>Ally ( integer team1, integer team2 )</h3>
-<p>Makes the two teams allies of each other.</p>
-<p>This function affects both teams so Ally(1, 2) and Ally(2, 1) produces the identical results, unlike the "half-allied" state created by the "ally" game key.</p>
-
-<h3>UnAlly ( integer team1, integer team2 )</h3>
-<p>Makes the two teams enemies of each other.</p>
-<p>This function affects both teams so UnAlly(1, 2) and UnAlly(2, 1) produces the identical results, unlike the "half-enemy" state created by the "unally" game key.</p>
-
-<h3>boolean IsTeamAllied ( integer team1, integer team2 )</h3>
-<p>Returns true if team1 considers team2 an ally. Returns false otherwise.</p>
-<p>Due to the possibility of player-initiated "half-alliances", IsTeamAllied(team1, team2) might not return the same result as IsTeamAllied(team2, team1).</p>
-
-<h3>boolean IsAlly ( handle me, handle him )</h3>
-<p>Returns true if game object "me" considers game object "him" an ally. Returns false otherwise.</p>
-<p>Due to the possibility of player-initiated "half-alliances", IsAlly(me, him) might not return the same result as IsAlly(him, me).</p>
+	<div class="function">
+		<h3>float GetLastFriendShot ( handle h )</h3>
+		<p>Returns the last time a friend shot the game object.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_8">Objective Marker</label>
-<input id="_8" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Alliances">Alliances</label>
+<input id="Alliances" type="checkbox">
 <div>
-<p>These functions control objective markers.</p>
-<p>Objectives are visible to all teams from any distance and from any direction, with an arrow pointing to off-screen objectives. There is currently no way to make team-specific objectives.</p>
+	<p>These functions control and query alliances between teams.</p>
+	<p>The team manager assigns each player a separate team number, starting with 1 and going as high as 15. Team 0 is the neutral "environment" team.</p>
+	<p>Unless specifically overridden, every team is friendly with itself, neutral with team 0, and hostile to everyone else.</p>
 
-<h3>SetObjectiveOn ( handle h )</h3>
-<p>Sets the game object as an objective to all teams.</p>
+	<div class="function">
+		<h3>DefaultAllies ()</h3>
+		<p>Sets team alliances back to default.</p>
+	</div>
 
-<h3>SetObjectiveOff ( handle h )</h3>
-<p>Sets the game object back to normal.</p>
+	<div class="function">
+		<h3>LockAllies ( boolean lock )</h3>
+		<p>Sets whether team alliances are locked. Locking alliances prevents players from allying or un-allying, preserving alliances set up by the mission script.</p>
+	</div>
 
-<h3>string GetObjectiveName ( handle h )</h3>
-<p>Gets the game object's visible name.</p>
+	<div class="function">
+		<h3>Ally ( integer team1, integer team2 )</h3>
+		<p>Makes the two teams allies of each other.</p>
+		<p>This function affects both teams so Ally(1, 2) and Ally(2, 1) produces the identical results, unlike the "half-allied" state created by the "ally" game key.</p>
+	</div>
 
-<h3>SetObjectiveName ( handle h, string name )</h3>
-<p>Sets the game object's visible name.</p>
+	<div class="function">
+		<h3>UnAlly ( integer team1, integer team2 )</h3>
+		<p>Makes the two teams enemies of each other.</p>
+		<p>This function affects both teams so UnAlly(1, 2) and UnAlly(2, 1) produces the identical results, unlike the "half-enemy" state created by the "unally" game key.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsTeamAllied ( integer team1, integer team2 )</h3>
+		<p>Returns true if team1 considers team2 an ally. Returns false otherwise.</p>
+		<p>Due to the possibility of player-initiated "half-alliances", IsTeamAllied(team1, team2) might not return the same result as IsTeamAllied(team2, team1).</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsAlly ( handle me, handle him )</h3>
+		<p>Returns true if game object "me" considers game object "him" an ally. Returns false otherwise.</p>
+		<p>Due to the possibility of player-initiated "half-alliances", IsAlly(me, him) might not return the same result as IsAlly(him, me).</p>
+	</div>
 </div>
 
-<label class="collapse" for="_9">Distance</label>
-<input id="_9" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="ObjectiveMarker">Objective Marker</label>
+<input id="ObjectiveMarker" type="checkbox">
 <div>
+	<p>These functions control objective markers.</p>
+	<p>Objectives are visible to all teams from any distance and from any direction, with an arrow pointing to off-screen objectives. There is currently no way to make team-specific objectives.</p>
 
-<h3>number GetDistance ( handle h1, handle h2 )</h3>
-<p>Returns the distance in meters between the two game objects.</p>
+	<div class="function">
+		<h3>SetObjectiveOn ( handle h )</h3>
+		<p>Sets the game object as an objective to all teams.</p>
+	</div>
 
-<h3>number GetDistance ( handle h1, string path, [ integer point ] )</h3>
-<p>Returns the distance in meters between the game object and a point on the path. It uses the start of the path if no point is given.</p>
+	<div class="function">
+		<h3>SetObjectiveOff ( handle h )</h3>
+		<p>Sets the game object back to normal.</p>
+	</div>
 
-<h3>number GetDistance ( handle h1, vector position )</h3>
-<p>Returns the distance in meters between the game object and a position vector.</p>
+	<div class="function">
+		<h3>string GetObjectiveName ( handle h )</h3>
+		<p>Gets the game object's visible name.</p>
+	</div>
 
-<h3>number GetDistance ( handle h1, matrix transform )</h3>
-<p>Returns the distance in meters between the game object and the position of a transform matrix.</p>
-
-<h3>boolean IsWithin ( handle h1, handle h2, number dist )</h3>
-<p>Returns true if the units are closer than the given distance of each other. Returns false otherwise.</p>
-<p> (This function is equivalent to GetDistance (h1, h2) &lt; d)</p>
-
-<h3>handle GetNearestObject ( handle h )</h3>
-<p>Returns the game object closest to the given game object. Returns nil if none exists.</p>
-
-<h3>handle GetNearestObject ( string path, [ integer point ] )</h3>
-<p>Returns the game object closest to a point on the path. It uses the start of the path if no point is given. Returns nil if none exists.</p>
-
-<h3>handle GetNearestObject ( vector position )</h3>
-<p>Returns the game object closest to the position vector. Returns nil if none exists.</p>
-
-<h3>handle GetNearestObject ( matrix transform )</h3>
-<p>Returns the game object closest to the position of the transform matrix. Returns nil if none exists.</p>
-
-<h3>handle GetNearestVehicle ( handle h )</h3>
-<p>Returns the craft closest to the given game object. Returns nil if none exists.</p>
-
-<h3>handle GetNearestVehicle ( string path, [ integer point ] )</h3>
-<p>Returns the craft closest to a point on the path. It uses the start of the path if no point is given. Returns nil if none exists.</p>
-
-<h3>handle GetNearestVehicle ( vector position )</h3>
-<p>Returns the vehicle closest to the position vector. Returns nil if none exists.</p>
-
-<h3>handle GetNearestVehicle ( matrix transform )</h3>
-<p>Returns the vehicle closest to the position of the transform matrix. Returns nil if none exists.</p>
-
-<h3>handle GetNearestBuilding ( handle h )</h3>
-<p>Returns the building closest to the given game object. Returns nil if none exists.</p>
-
-<h3>handle GetNearestBuilding ( string path, [ integer point ] )</h3>
-<p>Returns the building closest to a point on the path. It uses the start of the path if no point is given. Returns nil if none exists.</p>
-
-<h3>handle GetNearestBuilding ( vector position )</h3>
-<p>Returns the building closest to the position vector. Returns nil if none exists.</p>
-
-<h3>handle GetNearestBuilding ( matrix transform )</h3>
-<p>Returns the building closest to the position of the transform matrix. Returns nil if none exists.</p>
-
-<h3>handle GetNearestEnemy ( handle h )</h3>
-<p>Returns the enemy closest to the given game object. Returns nil if none exists.</p>
-
-<h3>handle GetNearestEnemy ( string path, [ integer point ] )</h3>
-<p>Returns the enemy closest to a point on the path. It uses the start of the path if no point is given. Returns nil if none exists.</p>
-
-<h3>handle GetNearestEnemy ( vector position )</h3>
-<p>Returns the enemy closest to the position vector. Returns nil if none exists.</p>
-
-<h3>handle GetNearestEnemy ( matrix transform )</h3>
-<p>Returns the enemy closest to the position of the transform matrix. Returns nil if none exists.</p>
-
-<h3>integer CountUnitsNearObject ( handle h, number dist, integer team, string odfname )</h3>
-<p>Returns how many objects with the given team and odf name are closer than the given distance.</p>
+	<div class="function">
+		<h3>SetObjectiveName ( handle h, string name )</h3>
+		<p>Sets the game object's visible name.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_10">Iterators</label>
-<input id="_10" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Distance">Distance</label>
+<input id="Distance" type="checkbox">
 <div>
-<p>These functions return iterator functions for use with Lua's "for &lt;variable&gt; in &lt;expression&gt; do ... end" form. For example: "for h in AllCraft() do print(h, GetLabel(h)) end" will print the game object handle and label of every craft in the world.</p>
+	<div class="function">
+		<h3>number GetDistance ( handle h1, handle h2 )</h3>
+		<p>Returns the distance in meters between the two game objects.</p>
+	</div>
 
-<h3>iterator ObjectsInRange ( number dist, handle h )</h3>
-<p>Enumerates game objects within the given distance of the game object.</p>
+	<div class="function">
+		<h3>number GetDistance ( handle h1, string path, [ integer point ] )</h3>
+		<p>Returns the distance in meters between the game object and a point on the path. It uses the start of the path if no point is given.</p>
+	</div>
 
-<h3>iterator ObjectsInRange ( number dist, name path, [ integer point ] )</h3>
-<p>Enumerates game objects within the given distance of the path point. It uses the start of the path if no point is given.</p>
+	<div class="function">
+		<h3>number GetDistance ( handle h1, vector position )</h3>
+		<p>Returns the distance in meters between the game object and a position vector.</p>
+	</div>
 
-<h3>iterator ObjectsInRange ( number dist, vector position )</h3>
-<p>Enumerates game objects within the given distance of the position vector.</p>
+	<div class="function">
+		<h3>number GetDistance ( handle h1, matrix transform )</h3>
+		<p>Returns the distance in meters between the game object and the position of a transform matrix.</p>
+	</div>
 
-<h3>iterator ObjectsInRange ( number dist, matrix transform )</h3>
-<p>Enumerates game objects within the given distance of the transform matrix.</p>
+	<div class="function">
+		<h3>boolean IsWithin ( handle h1, handle h2, number dist )</h3>
+		<p>Returns true if the units are closer than the given distance of each other. Returns false otherwise.</p>
+		<p> (This function is equivalent to GetDistance (h1, h2) &lt; d)</p>
+	</div>
 
-<h3>iterator AllObjects ()</h3>
-<p>Enumerates all game objects.</p>
+	<div class="function">
+		<h3>handle GetNearestObject ( handle h )</h3>
+		<p>Returns the game object closest to the given game object. Returns nil if none exists.</p>
+	</div>
 
-<h3>iterator AllCraft ()</h3>
-<p>Enumerates all craft.</p>
-<h3>iterator SelectedObjects ()</h3>
-<p>Enumerates all game objects currently selected by the local player.</p> 
+	<div class="function">
+		<h3>handle GetNearestObject ( string path, [ integer point ] )</h3>
+		<p>Returns the game object closest to a point on the path. It uses the start of the path if no point is given. Returns nil if none exists.</p>
+	</div>
 
-<h3>iterator ObjectiveObjects ()</h3>
-<p>Enumerates all game objects marked as objectives.</p>
+	<div class="function">
+		<h3>handle GetNearestObject ( vector position )</h3>
+		<p>Returns the game object closest to the position vector. Returns nil if none exists.</p>
+	</div>
 
-<h2>Scrap Management</h2>
-<p>These functions remove scrap, either to reduce the global game object count 
-or to remove clutter around a location.</p>
+	<div class="function">
+		<h3>handle GetNearestObject ( matrix transform )</h3>
+		<p>Returns the game object closest to the position of the transform matrix. Returns nil if none exists.</p>
+	</div>
 
-<h3>GetRidOfSomeScrap ( [ integer limit ] )</h3>
-<p>While the global scrap count is above the limit, remove the oldest scrap piece. It no limit is given, it uses the default limit of 300.</p>
+	<div class="function">
+		<h3>handle GetNearestVehicle ( handle h )</h3>
+		<p>Returns the craft closest to the given game object. Returns nil if none exists.</p>
+	</div>
 
-<h3>ClearScrapAround ( number distance, handle h )</h3>
-<p>Clear all scrap within the given distance of a game object.</p>
+	<div class="function">
+		<h3>handle GetNearestVehicle ( string path, [ integer point ] )</h3>
+		<p>Returns the craft closest to a point on the path. It uses the start of the path if no point is given. Returns nil if none exists.</p>
+	</div>
 
-<h3>ClearScrapAround ( number distance, string path, [ integer point ] )</h3>
-<p>Clear all scrap within the given distance of a point on the path. It uses the start of the path if no point is given.</p>
+	<div class="function">
+		<h3>handle GetNearestVehicle ( vector position )</h3>
+		<p>Returns the vehicle closest to the position vector. Returns nil if none exists.</p>
+	</div>
 
-<h3>ClearScrapAround ( number distance, vector position )</h3>
-<p>Clear all scrap within the given distance of a position vector.</p>
+	<div class="function">
+		<h3>handle GetNearestVehicle ( matrix transform )</h3>
+		<p>Returns the vehicle closest to the position of the transform matrix. Returns nil if none exists.</p>
+	</div>
 
-<h3>ClearScrapAround ( number distance, matrix transform )</h3>
-<p>Clear all scrap within the given distance of the position of a transform matrix.</p>
+	<div class="function">
+		<h3>handle GetNearestBuilding ( handle h )</h3>
+		<p>Returns the building closest to the given game object. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetNearestBuilding ( string path, [ integer point ] )</h3>
+		<p>Returns the building closest to a point on the path. It uses the start of the path if no point is given. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetNearestBuilding ( vector position )</h3>
+		<p>Returns the building closest to the position vector. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetNearestBuilding ( matrix transform )</h3>
+		<p>Returns the building closest to the position of the transform matrix. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetNearestEnemy ( handle h )</h3>
+		<p>Returns the enemy closest to the given game object. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetNearestEnemy ( string path, [ integer point ] )</h3>
+		<p>Returns the enemy closest to a point on the path. It uses the start of the path if no point is given. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetNearestEnemy ( vector position )</h3>
+		<p>Returns the enemy closest to the position vector. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetNearestEnemy ( matrix transform )</h3>
+		<p>Returns the enemy closest to the position of the transform matrix. Returns nil if none exists.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer CountUnitsNearObject ( handle h, number dist, integer team, string odfname )</h3>
+		<p>Returns how many objects with the given team and odf name are closer than the given distance.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_11">Team Slots</label>
-<input id="_11" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Iterators">Iterators</label>
+<input id="Iterators" type="checkbox">
 <div>
-<p>These functions look up game objects in team slots.</p>
+	<p>These functions return iterator functions for use with Lua's "for &lt;variable&gt; in &lt;expression&gt; do ... end" form. For example: "for h in AllCraft() do print(h, GetLabel(h)) end" will print the game object handle and label of every craft in the world.</p>
 
-<h3>TeamSlot</h3>
-<p>This is a global table that converts between team slot numbers and team slot names. For example, 
-TeamSlot.PLAYER or TeamSlot["PLAYER"] returns the team slot (0) for the player; 
-TeamSlot[0] returns the team slot name ("PLAYER") for team slot 0. For maintainability, always use this table instead of raw 
-team slot numbers.</p>
+	<div class="function">
+		<h3>iterator ObjectsInRange ( number dist, handle h )</h3>
+		<p>Enumerates game objects within the given distance of the game object.</p>
+	</div>
 
-<p>Available slots: UNDEFINED, PLAYER, RECYCLER, FACTORY, ARMORY, CONSTRUCT,
-MIN_OFFENSE, MAX_OFFENSE, MIN_DEFENSE, MAX_DEFENSE, MIN_UTILITY, MAX_UTILITY,
-MIN_BEACON, MAX_BEACON, MIN_POWER, MAX_POWER, MIN_COMM, MAX_COMM,
- MIN_REPAIR, MAX_REPAIR, MIN_SUPPLY, MAX_SUPPLY, MIN_SILO, MAX_SILO,
-MIN_BARRACKS, MAX_BARRACKS, MIN_GUNTOWER, MAX_GUNTOWER.</p>
+	<div class="function">
+		<h3>iterator ObjectsInRange ( number dist, name path, [ integer point ] )</h3>
+		<p>Enumerates game objects within the given distance of the path point. It uses the start of the path if no point is given.</p>
+	</div>
 
-<p>Slots starting with MIN_ and MAX_ represent the lower and upper bound of a range of slots.</p>
+	<div class="function">
+		<h3>iterator ObjectsInRange ( number dist, vector position )</h3>
+		<p>Enumerates game objects within the given distance of the position vector.</p>
+	</div>
 
-<h3>handle GetTeamSlot ( integer slot, [ integer team ] )</h3>
-<p>Get the game object in the specified team slot.</p>
-<p>It uses the local player team if no team is given.</p>
+	<div class="function">
+		<h3>iterator ObjectsInRange ( number dist, matrix transform )</h3>
+		<p>Enumerates game objects within the given distance of the transform matrix.</p>
+	</div>
 
-<h3>handle GetPlayerHandle ()</h3>
-<p>Returns the game object controlled by the local player. Returns nil if none exists.</p>
+	<div class="function">
+		<h3>iterator AllObjects ()</h3>
+		<p>Enumerates all game objects.</p>
+	</div>
 
-<h3>handle GetPlayerHandle ( integer team )</h3>
-<p>Returns the game object controlled by the player on the given team. Returns nil if none exists.</p>
+	<div class="function">
+		<h3>iterator AllCraft ()</h3>
+		<p>Enumerates all craft.</p>
+	</div>
 
-<h3>handle GetRecyclerHandle ( [ integer team ] )</h3>
-<p>Returns the Recycler on the given team. Returns nil if none exists.</p>
-<p>It uses the local player team if no team is given.</p>
+	<div class="function">
+		<h3>iterator SelectedObjects ()</h3>
+		<p>Enumerates all game objects currently selected by the local player.</p>
+	</div>
 
-<h3>handle GetFactoryHandle ( [ integer team ] )</h3>
-<p>Returns the Factory on the given team. Returns nil if none exists.</p>
-<p>It uses the local player team if no team is given.</p>
-
-<h3>handle GetArmoryHandle ( [ integer team ] )</h3>
-<p>Returns the Armory on the given team. Returns nil if none exists.</p>
-<p>It uses the local player team if no team is given.</p>
-
-<h3>handle GetConstructorHandle ( [ integer team ] )</h3>
-<p>Returns the Constructor on the given team. Returns nil if none exists.</p>
-<p>It uses the local player team if no team is given.</p>
+	<div class="function">
+		<h3>iterator ObjectiveObjects ()</h3>
+		<p>Enumerates all game objects marked as objectives.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_12">Team Pilots</label>
-<input id="_12" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="ScrapManagement">Scrap Management</label>
+<input id="ScrapManagement" type="checkbox">
 <div>
-<p>These functions get and set pilot counts for a team.</p>
+	<p>These functions remove scrap, either to reduce the global game object count or to remove clutter around a location.</p>
 
-<h3>integer AddPilot ( integer team, integer count )</h3>
-<p>Adds pilots to the team's pilot count, clamped between zero and maximum count.</p>
-<p>Returns the new pilot count.</p>
+	<div class="function">
+		<h3>GetRidOfSomeScrap ( [ integer limit ] )</h3>
+		<p>While the global scrap count is above the limit, remove the oldest scrap piece. It no limit is given, it uses the default limit of 300.</p>
+	</div>
 
-<h3>integer SetPilot ( integer team, integer count )</h3>
-<p>Sets the team's pilot count, clamped between zero and maximum count.</p>
-<p>Returns the new pilot count.</p>
+	<div class="function">
+		<h3>ClearScrapAround ( number distance, handle h )</h3>
+		<p>Clear all scrap within the given distance of a game object.</p>
+	</div>
 
-<h3>integer GetPilot ( integer team )</h3>
-<p>Returns the team's pilot count.</p>
+	<div class="function">
+		<h3>ClearScrapAround ( number distance, string path, [ integer point ] )</h3>
+		<p>Clear all scrap within the given distance of a point on the path. It uses the start of the path if no point is given.</p>
+	</div>
 
-<h3>integer AddMaxPilot ( integer team, integer count )</h3>
-<p>Adds pilots to the team's maximum pilot count.</p>
-<p>Returns the new pilot count.</p>
+	<div class="function">
+		<h3>ClearScrapAround ( number distance, vector position )</h3>
+		<p>Clear all scrap within the given distance of a position vector.</p>
+	</div>
 
-<h3>integer SetMaxPilot ( integer team, integer count )</h3>
-<p>Sets the team's maximum pilot count.</p>
-<p>Returns the new pilot count.</p>
-
-<h3>integer GetMaxPilot ( integer team )</h3>
-<p>Returns the team's maximum pilot count.</p>
+	<div class="function">
+		<h3>ClearScrapAround ( number distance, matrix transform )</h3>
+		<p>Clear all scrap within the given distance of the position of a transform matrix.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_13">Team Scrap</label>
-<input id="_13" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="TeamSlots">Team Slots</label>
+<input id="TeamSlots" type="checkbox">
 <div>
-<p>These functions get and set scrap values for a team.</p>
+	<p>These functions look up game objects in team slots.</p>
 
-<h3>integer AddScrap ( integer team, integer count )</h3>
-<p>Adds to the team's scrap count, clamped between zero and maximum count.</p>
-<p>Returns the new scrap count.</p>
+	<div class="function">
+		<h3>TeamSlot</h3>
+		<p>This is a global table that converts between team slot numbers and team slot names. For example, TeamSlot.PLAYER or TeamSlot["PLAYER"] returns the team slot (0) for the player; TeamSlot[0] returns the team slot name ("PLAYER") for team slot 0. For maintainability, always use this table instead of raw team slot numbers.</p>
+		<p>Available slots: UNDEFINED, PLAYER, RECYCLER, FACTORY, ARMORY, CONSTRUCT, MIN_OFFENSE, MAX_OFFENSE, MIN_DEFENSE, MAX_DEFENSE, MIN_UTILITY, MAX_UTILITY, MIN_BEACON, MAX_BEACON, MIN_POWER, MAX_POWER, MIN_COMM, MAX_COMM, MIN_REPAIR, MAX_REPAIR, MIN_SUPPLY, MAX_SUPPLY, MIN_SILO, MAX_SILO, MIN_BARRACKS, MAX_BARRACKS, MIN_GUNTOWER, MAX_GUNTOWER.</p>
+		<p>Slots starting with MIN_ and MAX_ represent the lower and upper bound of a range of slots.</p>
+	</div>
 
-<h3>integer SetScrap ( integer team, integer count )</h3>
-<p>Sets the team's scrap count, clamped between zero and maximum count.</p>
-<p>Returns the new scrap count.</p>
+	<div class="function">
+		<h3>handle GetTeamSlot ( integer slot, [ integer team ] )</h3>
+		<p>Get the game object in the specified team slot.</p>
+		<p>It uses the local player team if no team is given.</p>
+	</div>
 
-<h3>integer GetScrap ( integer team )</h3>
-<p>Returns the team's scrap count.</p>
+	<div class="function">
+		<h3>handle GetPlayerHandle ()</h3>
+		<p>Returns the game object controlled by the local player. Returns nil if none exists.</p>
+	</div>
 
-<h3>integer AddMaxScrap ( integer team, integer count )</h3>
-<p>Adds to the team's maximum scrap count.</p>
-<p>Returns the new maximum scrap count.</p>
+	<div class="function">
+		<h3>handle GetPlayerHandle ( integer team )</h3>
+		<p>Returns the game object controlled by the player on the given team. Returns nil if none exists.</p>
+	</div>
 
-<h3>integer SetMaxScrap ( integer team, integer count )</h3>
-<p>Sets the team's maximum scrap count.</p>
-<p>Returns the new maximum scrap count.</p>
+	<div class="function">
+		<h3>handle GetRecyclerHandle ( [ integer team ] )</h3>
+		<p>Returns the Recycler on the given team. Returns nil if none exists.</p>
+		<p>It uses the local player team if no team is given.</p>
+	</div>
 
-<h3>integer GetMaxScrap ( integer team )</h3>
-<p>Returns the team's maximum scrap count.</p>
+	<div class="function">
+		<h3>handle GetFactoryHandle ( [ integer team ] )</h3>
+		<p>Returns the Factory on the given team. Returns nil if none exists.</p>
+		<p>It uses the local player team if no team is given.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetArmoryHandle ( [ integer team ] )</h3>
+		<p>Returns the Armory on the given team. Returns nil if none exists.</p>
+		<p>It uses the local player team if no team is given.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetConstructorHandle ( [ integer team ] )</h3>
+		<p>Returns the Constructor on the given team. Returns nil if none exists.</p>
+		<p>It uses the local player team if no team is given.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_14">Deploy</label>
-<input id="_14" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="TeamPilots">Team Pilots</label>
+<input id="TeamPilots" type="checkbox">
 <div>
+	<p>These functions get and set pilot counts for a team.</p>
 
-<h3>boolean IsDeployed ( handle h )</h3>
-<p>Returns true if the game object is a deployed craft. Returns false otherwise.</p>
+	<div class="function">
+		<h3>integer AddPilot ( integer team, integer count )</h3>
+		<p>Adds pilots to the team's pilot count, clamped between zero and maximum count.</p>
+		<p>Returns the new pilot count.</p>
+	</div>
 
-<h3>Deploy ( handle h )</h3>
-<p>Tells the game object to deploy.</p>
+	<div class="function">
+		<h3>integer SetPilot ( integer team, integer count )</h3>
+		<p>Sets the team's pilot count, clamped between zero and maximum count.</p>
+		<p>Returns the new pilot count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer GetPilot ( integer team )</h3>
+		<p>Returns the team's pilot count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer AddMaxPilot ( integer team, integer count )</h3>
+		<p>Adds pilots to the team's maximum pilot count.</p>
+		<p>Returns the new pilot count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer SetMaxPilot ( integer team, integer count )</h3>
+		<p>Sets the team's maximum pilot count.</p>
+		<p>Returns the new pilot count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer GetMaxPilot ( integer team )</h3>
+		<p>Returns the team's maximum pilot count.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_15">Selection</label>
-<input id="_15" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="TeamScrap">Team Scrap</label>
+<input id="TeamScrap" type="checkbox">
 <div>
+	<p>These functions get and set scrap values for a team.</p>
 
-<h3>boolean IsSelected ( handle h )</h3>
-<p>Returns true if the game object is selected. Returns false otherwise.</p>
+	<div class="function">
+		<h3>integer AddScrap ( integer team, integer count )</h3>
+		<p>Adds to the team's scrap count, clamped between zero and maximum count.</p>
+		<p>Returns the new scrap count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer SetScrap ( integer team, integer count )</h3>
+		<p>Sets the team's scrap count, clamped between zero and maximum count.</p>
+		<p>Returns the new scrap count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer GetScrap ( integer team )</h3>
+		<p>Returns the team's scrap count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer AddMaxScrap ( integer team, integer count )</h3>
+		<p>Adds to the team's maximum scrap count.</p>
+		<p>Returns the new maximum scrap count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer SetMaxScrap ( integer team, integer count )</h3>
+		<p>Sets the team's maximum scrap count.</p>
+		<p>Returns the new maximum scrap count.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer GetMaxScrap ( integer team )</h3>
+		<p>Returns the team's maximum scrap count.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_16">Weapon</label>
-<input id="_16" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Deploy">Deploy</label>
+<input id="Deploy" type="checkbox">
 <div>
+	<div class="function">
+		<h3>boolean IsDeployed ( handle h )</h3>
+		<p>Returns true if the game object is a deployed craft. Returns false otherwise.</p>
+	</div>
 
-<h3>SetWeaponMask ( handle h, integer mask )</h3>
-<p>Sets what weapons the unit's AI process will use.</p>
-<p>To calculate the mask value, add up the values of the weapon hardpoint slots you want to enable.</p>
-<p>weaponHard1: 1 weaponHard2: 2 weaponHard3: 4 weaponHard4: 8 weaponHard5: 16</p>
-
-<h3>GiveWeapon ( handle h, [ string weaponname ], [ integer slot ] )</h3>
-<p>Gives the game object the named weapon in the given slot. If no slot is given, it chooses a slot based on hardpoint type and weapon priority like a weapon powerup would. If the weapon name is empty, nil, or blank and a slot is given, it removes the weapon in that slot.</p>
-<p>Returns true if it succeeded. Returns false otherwise.</p>
-
-<h3>string GetWeaponClass ( handle h, integer slot )</h3>
-<p>Returns the odf name of the weapon in the given slot on the game object. 
-Returns nil if the game object does not exist or the slot is empty.</p>
-<p>For example, an "avtank" game object would return "gatstab" for index 0 and 
-"gminigun" for index 1.</p>
-<h3>FireAt ( handle me, handle him )</h3>
-<p>Tells the game object to fire at the given target.</p>
-
-<h3>Damage ( handle h, number amount )</h3>
-<p>Applies damage to the game object.</p>
+	<div class="function">
+		<h3>Deploy ( handle h )</h3>
+		<p>Tells the game object to deploy.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_17">Time</label>
-<input id="_17" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Selection">Selection</label>
+<input id="Selection" type="checkbox">
 <div>
-<p>These function return time values.</p>
-
-<h3>GetTime ()</h3>
-<p>Returns the elapsed time in seconds since the start of the mission.</p>
-
-<h3>GetTimeStep ()</h3>
-<p>Returns the simulation time step in seconds.</p>
-
-<h3>GetTimeNow ()</h3>
-<p>Returns the current system time in milliseconds. This is mostly useful for performance profiling.</p>
+	<div class="function">
+		<h3>boolean IsSelected ( handle h )</h3>
+		<p>Returns true if the game object is selected. Returns false otherwise.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_18">Mission</label>
-<input id="_18" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Weapon">Weapon</label>
+<input id="Weapon" type="checkbox">
 <div>
+	<div class="function">
+		<h3>SetWeaponMask ( handle h, integer mask )</h3>
+		<p>Sets what weapons the unit's AI process will use.</p>
+		<p>To calculate the mask value, add up the values of the weapon hardpoint slots you want to enable.</p>
+		<p>weaponHard1: 1 weaponHard2: 2 weaponHard3: 4 weaponHard4: 8 weaponHard5: 16</p>
+	</div>
 
-<h3>SetAIControl ( integer team, [ boolean control ] )</h3>
-<p>Enables (or disables) strategic AI control for a given team. As of version 1.5.2.7, mission scripts must enable AI control for any team that intends to use an AIP.</p>
-<p>IMPORTANT SAFETY TIP: only call this function from the "root" of the Lua mission script! The strategic AI gets set up shortly afterward and attempting to use SetAIControl later will crash the game.</p>
+	<div class="function">
+		<h3>GiveWeapon ( handle h, [ string weaponname ], [ integer slot ] )</h3>
+		<p>Gives the game object the named weapon in the given slot. If no slot is given, it chooses a slot based on hardpoint type and weapon priority like a weapon powerup would. If the weapon name is empty, nil, or blank and a slot is given, it removes the weapon in that slot.</p>
+		<p>Returns true if it succeeded. Returns false otherwise.</p>
+	</div>
 
-<h3>boolean GetAIControl ( integer team )</h3>
-<p>Returns true if a given team is AI controlled. Returns false otherwise.</p>
-<p>Unlike SetAIControl, this function may be called at any time.</p>
+	<div class="function">
+		<h3>string GetWeaponClass ( handle h, integer slot )</h3>
+		<p>Returns the odf name of the weapon in the given slot on the game object. Returns nil if the game object does not exist or the slot is empty.</p>
+		<p>For example, an "avtank" game object would return "gatstab" for index 0 and "gminigun" for index 1.</p>
+	</div>
 
-<h3>string GetAIP ( [ integer team ] ) </h3>
-<p>Returns the current AIP for the team. It uses team 2 if no team number is given.</p>
+	<div class="function">
+		<h3>FireAt ( handle me, handle him )</h3>
+		<p>Tells the game object to fire at the given target.</p>
+	</div>
 
-<h3>SetAIP ( string aipname, [ integer team ] )</h3>
-<p>Switches the team's AI plan. It uses team 2 if no team number is given.</p>
-
-<h3>FailMission ( number time, [ string filename ] )</h3>
-<p>Fails the mission after the given time elapses. If supplied with a filename (usually a .des), it sets the failure message to text from that file.</p>
-
-<h3>SucceedMission ( number time, [ string filename ] )</h3>
-<p>Succeeds the mission after the given time elapses. If supplied with a filename (usually a .des), it sets the success message to text from that file.</p>
+	<div class="function">
+		<h3>Damage ( handle h, number amount )</h3>
+		<p>Applies damage to the game object.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_19">Objective Messages</label>
-<input id="_19" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Time">Time</label>
+<input id="Time" type="checkbox">
 <div>
-<p>These functions control the objective panel visible at the right of the 
-screen.</p>
+	<p>These function return time values.</p>
 
-<h3>ClearObjectives ()</h3>
-<p>Clears all objective messages.</p>
+	<div class="function">
+		<h3>GetTime ()</h3>
+		<p>Returns the elapsed time in seconds since the start of the mission.</p>
+	</div>
 
-<h3>AddObjective ( string filename, [ string color ], [ number duration ] )</h3>
-<p>Adds an objective message from the given file (usually an .otf).</p>
-<p>The message defaults to white if no color is given. The color may be "black", "dkgrey", "grey", "white", "blue", "dkblue", "green", "dkgreen", "yellow", "dkyellow", "red", or "dkred"; the value is case-insensitive.</p>
-<p>The message lasts 8 seconds if no duration is given.</p>
+	<div class="function">
+		<h3>GetTimeStep ()</h3>
+		<p>Returns the simulation time step in seconds.</p>
+	</div>
 
-<h3>UpdateObjective ( string filename, [ string color ], [ number duration ] )</h3>
-<p>Updates the objective message with the given file name. If no objective exists with that file name, it does nothing.</p>
-<p>The message defaults to white if no color is given. The color may be "black", "dkgrey", "grey", "white", "blue", "dkblue", "green", "dkgreen", "yellow", "dkyellow", "red", or "dkred"; the value is case-insensitive.</p>
-<p>The message lasts 8 seconds if no duration is given.</p>
-
-<h3>RemoveObjective ( string filename )</h3>
-<p>Removes the objective message with the given file name. Messages after the removed message will be moved up to fill the vacancy. If no objective exists with that file name, it does nothing.</p>
+	<div class="function">
+		<h3>GetTimeNow ()</h3>
+		<p>Returns the current system time in milliseconds. This is mostly useful for performance profiling.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_20">Cockpit Timer</label>
-<input id="_20" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Mission">Mission</label>
+<input id="Mission" type="checkbox">
 <div>
-<p>These functions control the large timer at the top of the screen.</p>
+	<div class="function">
+		<h3>SetAIControl ( integer team, [ boolean control ] )</h3>
+		<p>Enables (or disables) strategic AI control for a given team. As of version 1.5.2.7, mission scripts must enable AI control for any team that intends to use an AIP.</p>
+		<p>IMPORTANT SAFETY TIP: only call this function from the "root" of the Lua mission script! The strategic AI gets set up shortly afterward and attempting to use SetAIControl later will crash the game.</p>
+	</div>
 
-<h3>StartCockpitTimer ( integer time, [ integer warn ], [ integer alert ] )</h3>
-<p>Starts the cockpit timer counting down from the given time. If a warn time is given, the timer will turn yellow when it reaches that value. If an alert time is given, the timer will turn red when it reaches that value. All time values are in seconds.</p>
-<p>The start time can be up to 35999, which will appear on-screen as 9:59:59. 
-If the remaining time is an hour or less, the timer will show only minutes and 
-seconds.</p>
+	<div class="function">
+		<h3>boolean GetAIControl ( integer team )</h3>
+		<p>Returns true if a given team is AI controlled. Returns false otherwise.</p>
+		<p>Unlike SetAIControl, this function may be called at any time.</p>
+	</div>
 
-<h3>StartCockpitTimerUp ( integer time, [ integer warn ], [ integer alert ] )</h3>
-<p>Starts the cockpit timer counting up from the given time. If a warn time is given, the timer will turn yellow when it reaches that value. If an alert time is given, the timer will turn red when it reaches that value. All time values are in seconds.</p>
-<p>The on-screen timer will always show hours, minutes, and seconds The 
-hours digit will malfunction after 10 hours.</p>
+	<div class="function">
+		<h3>string GetAIP ( [ integer team ] ) </h3>
+		<p>Returns the current AIP for the team. It uses team 2 if no team number is given.</p>
+	</div>
 
-<h3>StopCockpitTimer ()</h3>
-<p>Stops the cockpit timer.</p>
+	<div class="function">
+		<h3>SetAIP ( string aipname, [ integer team ] )</h3>
+		<p>Switches the team's AI plan. It uses team 2 if no team number is given.</p>
+	</div>
 
-<h3>HideCockpitTimer ()</h3>
-<p>Hides the cockpit timer.</p>
+	<div class="function">
+		<h3>FailMission ( number time, [ string filename ] )</h3>
+		<p>Fails the mission after the given time elapses. If supplied with a filename (usually a .des), it sets the failure message to text from that file.</p>
+	</div>
 
-<h3>integer GetCockpitTimer ()</h3>
-<p>Returns the current time in seconds on the cockpit timer.</p>
+	<div class="function">
+		<h3>SucceedMission ( number time, [ string filename ] )</h3>
+		<p>Succeeds the mission after the given time elapses. If supplied with a filename (usually a .des), it sets the success message to text from that file.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_21">Earthquake</label>
-<input id="_21" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="ObjectiveMessages">Objective Messages</label>
+<input id="ObjectiveMessages" type="checkbox">
 <div>
-<p>These functions control the global earthquake effect.</p>
+	<p>These functions control the objective panel visible at the right of the screen.</p>
 
-<h3>StartEarthquake ( number magnitude )</h3>
-<p>Starts a global earthquake effect.</p>
+	<div class="function">
+		<h3>ClearObjectives ()</h3>
+		<p>Clears all objective messages.</p>
+	</div>
 
-<h3>UpdateEarthQuake ( number magnitude )</h3>
-<p>Changes the magnitude of an existing earthquake effect.</p>
-<p>Important: note the inconsistent capitalization, which matches the internal C++ script utility functions.</p>
+	<div class="function">
+		<h3>AddObjective ( string filename, [ string color ], [ number duration ] )</h3>
+		<p>Adds an objective message from the given file (usually an .otf).</p>
+		<p>The message defaults to white if no color is given. The color may be "black", "dkgrey", "grey", "white", "blue", "dkblue", "green", "dkgreen", "yellow", "dkyellow", "red", or "dkred"; the value is case-insensitive.</p>
+		<p>The message lasts 8 seconds if no duration is given.</p>
+	</div>
 
-<h3>StopEarthquake ()</h3>
-<p>Stops the global earthquake effect.</p>
+	<div class="function">
+		<h3>UpdateObjective ( string filename, [ string color ], [ number duration ] )</h3>
+		<p>Updates the objective message with the given file name. If no objective exists with that file name, it does nothing.</p>
+		<p>The message defaults to white if no color is given. The color may be "black", "dkgrey", "grey", "white", "blue", "dkblue", "green", "dkgreen", "yellow", "dkyellow", "red", or "dkred"; the value is case-insensitive.</p>
+		<p>The message lasts 8 seconds if no duration is given.</p>
+	</div>
+
+	<div class="function">
+		<h3>RemoveObjective ( string filename )</h3>
+		<p>Removes the objective message with the given file name. Messages after the removed message will be moved up to fill the vacancy. If no objective exists with that file name, it does nothing.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_22">Path Type</label>
-<input id="_22" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="CockpitTimer">Cockpit Timer</label>
+<input id="CockpitTimer" type="checkbox">
 <div>
-<p>These functions set the looping type of a path.</p>
+	<p>These functions control the large timer at the top of the screen.</p>
 
-<h3>SetPathOneWay ( string path )</h3>
-<p>Changes the named path to one-way. Once a unit reaches the end of the 
-path, it will stop.</p>
+	<div class="function">
+		<h3>StartCockpitTimer ( integer time, [ integer warn ], [ integer alert ] )</h3>
+		<p>Starts the cockpit timer counting down from the given time. If a warn time is given, the timer will turn yellow when it reaches that value. If an alert time is given, the timer will turn red when it reaches that value. All time values are in seconds.</p>
+		<p>The start time can be up to 35999, which will appear on-screen as 9:59:59. If the remaining time is an hour or less, the timer will show only minutes and seconds.</p>
+	</div>
 
-<h3>SetPathRoundTrip ( string path )</h3>
-<p>Changes the named path to round-trip. Once a unit reaches the end of 
-the path, it will follow the path backwards to the start and begin again.</p>
+	<div class="function">
+		<h3>StartCockpitTimerUp ( integer time, [ integer warn ], [ integer alert ] )</h3>
+		<p>Starts the cockpit timer counting up from the given time. If a warn time is given, the timer will turn yellow when it reaches that value. If an alert time is given, the timer will turn red when it reaches that value. All time values are in seconds.</p>
+		<p>The on-screen timer will always show hours, minutes, and seconds The hours digit will malfunction after 10 hours.</p>
+	</div>
 
-<h3>SetPathLoop ( string path )</h3>
-<p>Changes the named path to looping. Once a unit reaches the end of the 
-path, it will continue along to the start and begin again.</p>
+	<div class="function">
+		<h3>StopCockpitTimer ()</h3>
+		<p>Stops the cockpit timer.</p>
+	</div>
+
+	<div class="function">
+		<h3>HideCockpitTimer ()</h3>
+		<p>Hides the cockpit timer.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer GetCockpitTimer ()</h3>
+		<p>Returns the current time in seconds on the cockpit timer.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_23">Unit Commands</label>
-<input id="_23" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Earthquake">Earthquake</label>
+<input id="Earthquake" type="checkbox">
 <div>
-<p>These functions send commands to units or query their command state.</p>
+	<p>These functions control the global earthquake effect.</p>
 
-<h3>AiCommand</h3>
-<p>This is a global table that converts between command numbers and command names. For example, AiCommand.GO or AiCommand["GO"] returns the command number (3) for the "go" command; AiCommand[3] returns the command name ("GO") for command number 3. For maintainability, always use this table instead of raw command numbers.</p>
-<p>Available commands: NONE, SELECT, STOP, GO, ATTACK, FOLLOW, FORMATION, PICKUP, DROPOFF, NO_DROPOFF, GET_REPAIR, GET_RELOAD, GET_WEAPON, GET_CAMERA, GET_BOMB, DEFEND, GO_TO_GEYSER, RESCUE, RECYCLE, SCAVENGE, HUNT, BUILD, PATROL, STAGE, SEND, GET_IN, LAY_MINES.</p>
+	<div class="function">
+		<h3>StartEarthquake ( number magnitude )</h3>
+		<p>Starts a global earthquake effect.</p>
+	</div>
 
-<h3>boolean CanCommand ( handle me )</h3>
-<p>Returns true if the game object can be commanded. Returns false otherwise.</p>
+	<div class="function">
+		<h3>UpdateEarthQuake ( number magnitude )</h3>
+		<p>Changes the magnitude of an existing earthquake effect.</p>
+		<p>Important: note the inconsistent capitalization, which matches the internal C++ script utility functions.</p>
+	</div>
 
-<h3>boolean CanBuild ( handle me )</h3>
-<p>Returns true if the game object is a producer that can build at the moment. Returns false otherwise.</p>
-
-<h3>boolean IsBusy ( handle me )</h3>
-<p>Returns true if the game object is a producer and currently busy. Returns false otherwise.</p>
-
-<h3>integer GetCurrentCommand ( handle me )</h3>
-<p>Returns the current command for the game object. Looking up the command number in the AiCommand table will convert it to a string. Looking up the command string in the AiCommand table will convert it back to a number.</p>
-
-<h3>handle GetCurrentWho ( handle me )</h3>
-<p>Returns the target of the current command for the game object. Returns nil if it has none.</p>
-
-<h3>integer GetIndependence( handle me )</h3>
-<p>Gets the independence of a unit.</p>
-
-<h3>SetIndependence ( handle me, integer independence)</h3>
-<p>Sets the independence of a unit. 1 (the default) lets the unit take initiative (e.g. attack nearby enemies), while 0 prevents that.</p>
-
-<h3>SetCommand ( handle me, integer command, [ integer priority ], [ handle who 
-], matrix where, [ number when ], [ string param ] )</h3>
-<p>Commands the unit using the give parameters. Be careful with this since not all commands work with all units and some have strict requirements on their parameters.</p>
-<p>"Command" is the command to issue, normally chosen from the global AiCommand table (e.g. AiCommand.GO). "Priority" is the command priority; a value of 0 leaves the unit commandable while the default value of 1 makes it uncommandable. "Who" is the optional target game object. "Where" is the destination. "When" is an optional absolute time value only used by command AiCommand.STAGE. Param is an optional odf name only used by command AiCommand.BUILD.</p>
-
-<h3>SetCommand ( handle me, integer command, [ integer priority ], [ handle who ], vector where, [ number when ], [ string param ] )</h3>
-<p>Commands the unit using the give parameters. Be careful with this since not all commands work with all units and some have strict requirements on their parameters.</p>
-<p>"Command" is the command to issue, normally chosen from the global AiCommand table (e.g. AiCommand.GO). "Priority" is the command priority; a value of 0 leaves the unit commandable while the default value of 1 makes it uncommandable. "Who" is the optional target game object. "Where" is the destination. "When" is an optional absolute time value only used by command AiCommand.STAGE. Param is an optional odf name only used by command AiCommand.BUILD.</p>
-
-<h3>SetCommand ( handle me, integer command, [ integer priority ], [ handle who ], [ string path ], [ number when ], [ string param ] )</h3>
-<p>Commands the unit using the give parameters. Be careful with this since not all commands work with all units and some have strict requirements on their parameters.</p>
-<p>"Command" is the command to issue, normally chosen from the global AiCommand table (e.g. AiCommand.GO). "Priority" is the command priority; a value of 0 leaves the unit commandable while the default value of 1 makes it uncommandable. "Who" is the optional target game object. "Path" is the optional name of a path to follow. "When" is an optional absolute time value only used by command AiCommand.STAGE. Param is an optional odf name only used by command AiCommand.BUILD.</p>
-
-<h3>Attack ( handle me, handle him , [ integer priority ] )</h3>
-<p>Commands the unit to attack the given target.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Goto ( handle me, string path , [ integer priority ] )</h3>
-<p>Commands the unit to go to the named path.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Goto ( handle me, handle him , [ integer priority ] )</h3>
-<p>Commands the unit to go to the given target</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Goto ( handle me, vector position , [ integer priority ] )</h3>
-<p>Commands the unit to go to the given position vector</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Goto ( handle me, matrix transform , [ integer priority ] )</h3>
-<p>Commands the unit to go to the position of the given transform matrix</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Mine ( handle me, string path , [ integer priority ] )</h3>
-<p>Commands the unit to lay mines at the named path; only minelayer units support this.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Mine ( handle me, vector position, [ integer priority ] )</h3>
-<p>Commands the unit to lay mines at the given position vector</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Mine ( handle me, matrix transform, [ integer priority ] )</h3>
-<p>Commands the unit to lay mines at the position of the transform matrix</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Follow ( handle me, handle him, [ integer priority ] )</h3>
-<p>Commands the unit to follow the given target.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Defend ( handle me, [ integer priority ] )</h3>
-<p>Commands the unit to defend its current location.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Defend2 ( handle me, handle him, [ integer priority ] )</h3>
-<p>Commands the unit to defend the given target.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Stop ( handle me, [ integer priority ] )</h3>
-<p>Commands the unit to stop at its current location.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Patrol ( handle me, string path, [ integer priority ] )</h3>
-<p>Commands the unit to patrol along the named path. This is equivalent to Goto with an independence of 1.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Retreat ( handle me, string path, [ integer priority ] )</h3>
-<p>Commands the unit to retreat to the named path. This is equivalent to Goto with an independence of 0.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Retreat ( handle me, handle him , [ integer priority ] )</h3>
-<p>Commands the unit to retreat to the given target. This is equivalent to Goto with an independence of 0.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>GetIn ( handle me, handle him, [ integer priority ] )</h3>
-<p>Commands the pilot to get into the target vehicle.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Pickup ( handle me, handle him, [ integer priority ] )</h3>
-<p>Commands the unit to pick up the target object. Deployed units pack up (ignoring the target), scavengers pick up scrap, and tugs pick up and carry objects.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Dropoff ( handle me, string path, [ integer priority ] )</h3>
-<p>Commands the unit to drop off at the named path. Tugs drop off their cargo and Construction Rigs build the selected item at the location using their current facing.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Dropoff ( handle me, vector position, [ integer priority ] )</h3>
-<p>Commands the unit to drop off at the position vector. Tugs drop off their cargo and Construction Rigs build the selected item at the location using their current facing.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Dropoff ( handle me, matrix transform, [ integer priority ] )</h3>
-<p>Commands the unit to drop off at the position of the transform matrix. Tugs drop off their cargo and Construction Rigs build the selected item with the facing of the transform matrix.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>Build ( handle me, string odfname, [ integer priority ] )</h3>
-<p>Commands a producer to build the given odf name. The Armory and Construction Rig need an additional Dropoff to give them a location to build but first need at least one simulation update to process the Build.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>BuildAt ( handle me, string odfname, handle target, [ integer priority ] )</h3>
-<p>Commands a producer to build the given odf name at the location of the target game object. A Construction Rig will build at the location and an Armory will launch the item to the location. Other producers will ignore the location.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>BuildAt ( handle me, string odfname, string path, [ integer priority ] )</h3>
-<p>Commands a producer to build the given odf name at the named path. A Construction Rig will build at the location and an Armory will launch the item to the location. Other producers will ignore the location.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>BuildAt ( handle me, string odfname, vector position, [ integer priority ] )</h3>
-<p>Commands a producer to build the given odf name at the position vector. A Construction Rig will build at the location with their current facing and an Armory will launch the item to the location. Other producers will ignore the location.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
-
-<h3>BuildAt ( handle me, string odfname, matrix transform, [ integer priority ] )</h3>
-<p>Commands a producer to build the given odf name at the transform matrix. A Construction Rig will build at the location with the facing of the transform and an Armory will launch the item to the location. Other producers will ignore the location.</p>
-<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	<div class="function">
+		<h3>StopEarthquake ()</h3>
+		<p>Stops the global earthquake effect.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_24">Tug Cargo</label>
-<input id="_24" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="PathType">Path Type</label>
+<input id="PathType" type="checkbox">
 <div>
+	<p>These functions set the looping type of a path.</p>
 
-<h3>boolean HasCargo ( handle me )</h3>
-<p>Returns true if the unit is a tug carrying cargo.</p>
+	<div class="function">
+		<h3>SetPathOneWay ( string path )</h3>
+		<p>Changes the named path to one-way. Once a unit reaches the end of the path, it will stop.</p>
+	</div>
 
-<h3>handle GetTug ( handle cargo )</h3>
-<p>Returns the tug carrying the object. Returns nil if not carried.</p>
+	<div class="function">
+		<h3>SetPathRoundTrip ( string path )</h3>
+		<p>Changes the named path to round-trip. Once a unit reaches the end of the path, it will follow the path backwards to the start and begin again.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetPathLoop ( string path )</h3>
+		<p>Changes the named path to looping. Once a unit reaches the end of the path, it will continue along to the start and begin again.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_25">Pilot Actions</label>
-<input id="_25" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="UnitCommands">Unit Commands</label>
+<input id="UnitCommands" type="checkbox">
 <div>
-<p>These functions control the pilot of a vehicle.</p>
+	<p>These functions send commands to units or query their command state.</p>
 
-<h3>EjectPilot ( handle h )</h3>
-<p>Commands the vehicle's pilot to eject.</p>
+	<div class="function">
+		<h3>AiCommand</h3>
+		<p>This is a global table that converts between command numbers and command names. For example, AiCommand.GO or AiCommand["GO"] returns the command number (3) for the "go" command; AiCommand[3] returns the command name ("GO") for command number 3. For maintainability, always use this table instead of raw command numbers.</p>
+		<p>Available commands: NONE, SELECT, STOP, GO, ATTACK, FOLLOW, FORMATION, PICKUP, DROPOFF, NO_DROPOFF, GET_REPAIR, GET_RELOAD, GET_WEAPON, GET_CAMERA, GET_BOMB, DEFEND, GO_TO_GEYSER, RESCUE, RECYCLE, SCAVENGE, HUNT, BUILD, PATROL, STAGE, SEND, GET_IN, LAY_MINES.</p>
+	</div>
 
-<h3>HopOut ( handle h )</h3>
-<p>Commands the vehicle's pilot to hop out.</p>
+	<div class="function">
+		<h3>boolean CanCommand ( handle me )</h3>
+		<p>Returns true if the game object can be commanded. Returns false otherwise.</p>
+	</div>
 
-<h3>KillPilot ( handle h )</h3>
-<p>Kills the vehicle's pilot as if sniped.</p>
+	<div class="function">
+		<h3>boolean CanBuild ( handle me )</h3>
+		<p>Returns true if the game object is a producer that can build at the moment. Returns false otherwise.</p>
+	</div>
 
-<h3>RemovePilot ( handle h )</h3>
-<p>Removes the vehicle's pilot cleanly.</p>
+	<div class="function">
+		<h3>boolean IsBusy ( handle me )</h3>
+		<p>Returns true if the game object is a producer and currently busy. Returns false otherwise.</p>
+	</div>
 
-<h3>handle HoppedOutOf ( handle h )</h3>
-<p>Returns the vehicle that the pilot most recently hopped out of.</p>
+	<div class="function">
+		<h3>integer GetCurrentCommand ( handle me )</h3>
+		<p>Returns the current command for the game object. Looking up the command number in the AiCommand table will convert it to a string. Looking up the command string in the AiCommand table will convert it back to a number.</p>
+	</div>
+
+	<div class="function">
+		<h3>handle GetCurrentWho ( handle me )</h3>
+		<p>Returns the target of the current command for the game object. Returns nil if it has none.</p>
+	</div>
+
+	<div class="function">
+		<h3>integer GetIndependence( handle me )</h3>
+		<p>Gets the independence of a unit.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetIndependence ( handle me, integer independence)</h3>
+		<p>Sets the independence of a unit. 1 (the default) lets the unit take initiative (e.g. attack nearby enemies), while 0 prevents that.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetCommand ( handle me, integer command, [ integer priority ], [ handle who ], matrix where, [ number when ], [ string param ] )</h3>
+		<p>Commands the unit using the give parameters. Be careful with this since not all commands work with all units and some have strict requirements on their parameters.</p>
+		<p>"Command" is the command to issue, normally chosen from the global AiCommand table (e.g. AiCommand.GO). "Priority" is the command priority; a value of 0 leaves the unit commandable while the default value of 1 makes it uncommandable. "Who" is the optional target game object. "Where" is the destination. "When" is an optional absolute time value only used by command AiCommand.STAGE. Param is an optional odf name only used by command AiCommand.BUILD.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetCommand ( handle me, integer command, [ integer priority ], [ handle who ], vector where, [ number when ], [ string param ] )</h3>
+		<p>Commands the unit using the give parameters. Be careful with this since not all commands work with all units and some have strict requirements on their parameters.</p>
+		<p>"Command" is the command to issue, normally chosen from the global AiCommand table (e.g. AiCommand.GO). "Priority" is the command priority; a value of 0 leaves the unit commandable while the default value of 1 makes it uncommandable. "Who" is the optional target game object. "Where" is the destination. "When" is an optional absolute time value only used by command AiCommand.STAGE. Param is an optional odf name only used by command AiCommand.BUILD.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetCommand ( handle me, integer command, [ integer priority ], [ handle who ], [ string path ], [ number when ], [ string param ] )</h3>
+		<p>Commands the unit using the give parameters. Be careful with this since not all commands work with all units and some have strict requirements on their parameters.</p>
+		<p>"Command" is the command to issue, normally chosen from the global AiCommand table (e.g. AiCommand.GO). "Priority" is the command priority; a value of 0 leaves the unit commandable while the default value of 1 makes it uncommandable. "Who" is the optional target game object. "Path" is the optional name of a path to follow. "When" is an optional absolute time value only used by command AiCommand.STAGE. Param is an optional odf name only used by command AiCommand.BUILD.</p>
+	</div>
+
+	<div class="function">
+		<h3>Attack ( handle me, handle him , [ integer priority ] )</h3>
+		<p>Commands the unit to attack the given target.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Goto ( handle me, string path , [ integer priority ] )</h3>
+		<p>Commands the unit to go to the named path.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Goto ( handle me, handle him , [ integer priority ] )</h3>
+		<p>Commands the unit to go to the given target</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Goto ( handle me, vector position , [ integer priority ] )</h3>
+		<p>Commands the unit to go to the given position vector</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Goto ( handle me, matrix transform , [ integer priority ] )</h3>
+		<p>Commands the unit to go to the position of the given transform matrix</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Mine ( handle me, string path , [ integer priority ] )</h3>
+		<p>Commands the unit to lay mines at the named path; only minelayer units support this.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Mine ( handle me, vector position, [ integer priority ] )</h3>
+		<p>Commands the unit to lay mines at the given position vector</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Mine ( handle me, matrix transform, [ integer priority ] )</h3>
+		<p>Commands the unit to lay mines at the position of the transform matrix</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Follow ( handle me, handle him, [ integer priority ] )</h3>
+		<p>Commands the unit to follow the given target.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Defend ( handle me, [ integer priority ] )</h3>
+		<p>Commands the unit to defend its current location.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Defend2 ( handle me, handle him, [ integer priority ] )</h3>
+		<p>Commands the unit to defend the given target.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Stop ( handle me, [ integer priority ] )</h3>
+		<p>Commands the unit to stop at its current location.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Patrol ( handle me, string path, [ integer priority ] )</h3>
+		<p>Commands the unit to patrol along the named path. This is equivalent to Goto with an independence of 1.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Retreat ( handle me, string path, [ integer priority ] )</h3>
+		<p>Commands the unit to retreat to the named path. This is equivalent to Goto with an independence of 0.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Retreat ( handle me, handle him , [ integer priority ] )</h3>
+		<p>Commands the unit to retreat to the given target. This is equivalent to Goto with an independence of 0.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>GetIn ( handle me, handle him, [ integer priority ] )</h3>
+		<p>Commands the pilot to get into the target vehicle.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Pickup ( handle me, handle him, [ integer priority ] )</h3>
+		<p>Commands the unit to pick up the target object. Deployed units pack up (ignoring the target), scavengers pick up scrap, and tugs pick up and carry objects.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Dropoff ( handle me, string path, [ integer priority ] )</h3>
+		<p>Commands the unit to drop off at the named path. Tugs drop off their cargo and Construction Rigs build the selected item at the location using their current facing.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Dropoff ( handle me, vector position, [ integer priority ] )</h3>
+		<p>Commands the unit to drop off at the position vector. Tugs drop off their cargo and Construction Rigs build the selected item at the location using their current facing.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Dropoff ( handle me, matrix transform, [ integer priority ] )</h3>
+		<p>Commands the unit to drop off at the position of the transform matrix. Tugs drop off their cargo and Construction Rigs build the selected item with the facing of the transform matrix.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>Build ( handle me, string odfname, [ integer priority ] )</h3>
+		<p>Commands a producer to build the given odf name. The Armory and Construction Rig need an additional Dropoff to give them a location to build but first need at least one simulation update to process the Build.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>BuildAt ( handle me, string odfname, handle target, [ integer priority ] )</h3>
+		<p>Commands a producer to build the given odf name at the location of the target game object. A Construction Rig will build at the location and an Armory will launch the item to the location. Other producers will ignore the location.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>BuildAt ( handle me, string odfname, string path, [ integer priority ] )</h3>
+		<p>Commands a producer to build the given odf name at the named path. A Construction Rig will build at the location and an Armory will launch the item to the location. Other producers will ignore the location.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>BuildAt ( handle me, string odfname, vector position, [ integer priority ] )</h3>
+		<p>Commands a producer to build the given odf name at the position vector. A Construction Rig will build at the location with their current facing and an Armory will launch the item to the location. Other producers will ignore the location.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
+
+	<div class="function">
+		<h3>BuildAt ( handle me, string odfname, matrix transform, [ integer priority ] )</h3>
+		<p>Commands a producer to build the given odf name at the transform matrix. A Construction Rig will build at the location with the facing of the transform and an Armory will launch the item to the location. Other producers will ignore the location.</p>
+		<p>Priority 0 leaves the unit commandable while the default priority 1 makes it uncommandable.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_26">Health Values</label>
-<input id="_26" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="TugCargo">Tug Cargo</label>
+<input id="TugCargo" type="checkbox">
 <div>
-<p>These functions get and set health values on a game object.</p>
+	<div class="function">
+		<h3>boolean HasCargo ( handle me )</h3>
+		<p>Returns true if the unit is a tug carrying cargo.</p>
+	</div>
 
-<h3>number GetHealth ( handle h )</h3>
-<p>Returns the fractional health of the game object between 0 and 1.</p>
-
-<h3>number GetCurHealth ( handle h )</h3>
-<p>Returns the current health value of the game object.</p>
-
-<h3>number GetMaxHealth ( handle h )</h3>
-<p>Returns the maximum health value of the game object.</p>
-
-<h3>SetCurHealth ( handle h, number health )</h3>
-<p>Sets the current health of the game object.</p>
-
-<h3>SetMaxHealth ( handle h, number health )</h3>
-<p>Sets the maximum health of the game object.</p>
-
-<h3>AddHealth ( handle h, number health )</h3>
-<p>Adds to the current health of the game object.</p>
+	<div class="function">
+		<h3>handle GetTug ( handle cargo )</h3>
+		<p>Returns the tug carrying the object. Returns nil if not carried.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_27">Ammo Values</label>
-<input id="_27" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="PilotActions">Pilot Actions</label>
+<input id="PilotActions" type="checkbox">
 <div>
-<p>These functions get and set ammo values on a game object.</p>
+	<p>These functions control the pilot of a vehicle.</p>
 
-<h3>number GetAmmo ( handle h )</h3>
-<p>Returns the fractional ammo of the game object between 0 and 1.</p>
+	<div class="function">
+		<h3>EjectPilot ( handle h )</h3>
+		<p>Commands the vehicle's pilot to eject.</p>
+	</div>
 
-<h3>number GetCurAmmo ( handle h )</h3>
-<p>Returns the current ammo value of the game object.</p>
+	<div class="function">
+		<h3>HopOut ( handle h )</h3>
+		<p>Commands the vehicle's pilot to hop out.</p>
+	</div>
 
-<h3>number GetMaxAmmo ( handle h )</h3>
-<p>Returns the maximum ammo value of the game object.</p>
+	<div class="function">
+		<h3>KillPilot ( handle h )</h3>
+		<p>Kills the vehicle's pilot as if sniped.</p>
+	</div>
 
-<h3>SetCurAmmo ( handle h, number ammo )</h3>
-<p>Sets the current ammo of the game object.</p>
+	<div class="function">
+		<h3>RemovePilot ( handle h )</h3>
+		<p>Removes the vehicle's pilot cleanly.</p>
+	</div>
 
-<h3>SetMaxAmmo ( handle h, number ammo )</h3>
-<p>Sets the maximum ammo of the game object.</p>
-
-<h3>AddAmmo ( handle h, number ammo )</h3>
-<p>Adds to the current ammo of the game object.</p>
+	<div class="function">
+		<h3>handle HoppedOutOf ( handle h )</h3>
+		<p>Returns the vehicle that the pilot most recently hopped out of.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_28">Cinematic Camera</label>
-<input id="_28" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="HealthValues">Health Values</label>
+<input id="HealthValues" type="checkbox">
 <div>
-<p>These functions control the cinematic camera for in-engine cut scenes (or 
-"cineractives" as the Interstate '76 team at Activision called them).</p>
+	<p>These functions get and set health values on a game object.</p>
 
-<h3>boolean CameraReady ()</h3>
-<p>Starts the cinematic camera and disables normal input.</p>
-<p>Always returns true.</p>
+	<div class="function">
+		<h3>number GetHealth ( handle h )</h3>
+		<p>Returns the fractional health of the game object between 0 and 1.</p>
+	</div>
 
-<h3>boolean CameraPath ( string path, integer height, integer speed, handle target )</h3>
-<p>Moves a cinematic camera along a path at a given height and speed while looking at a target game object.</p>
-<p>Returns true when the camera arrives at its destination. Returns false otherwise.</p>
+	<div class="function">
+		<h3>number GetCurHealth ( handle h )</h3>
+		<p>Returns the current health value of the game object.</p>
+	</div>
 
-<h3>boolean CameraPathDir ( string path, integer height, integer speed )</h3>
-<p>Moves a cinematic camera long a path at a given height and speed while looking along the path direction.</p>
-<p>Returns true when the camera arrives at its destination. Returns false otherwise.</p>
+	<div class="function">
+		<h3>number GetMaxHealth ( handle h )</h3>
+		<p>Returns the maximum health value of the game object.</p>
+	</div>
 
-<h3>boolean PanDone ()</h3>
-<p>Returns true when the camera arrives at its destination. Returns false otherwise.</p>
+	<div class="function">
+		<h3>SetCurHealth ( handle h, number health )</h3>
+		<p>Sets the current health of the game object.</p>
+	</div>
 
-<h3>boolean CameraObject ( handle base, integer right, integer up, integer forward, handle target )</h3>
-<p>Offsets a cinematic camera from a base game object while looking at a target game object. The right, up, and forward offets are in centimeters.</p>
-<p>Returns true if the base or handle game object does not exist. Returns false otherwise.</p>
+	<div class="function">
+		<h3>SetMaxHealth ( handle h, number health )</h3>
+		<p>Sets the maximum health of the game object.</p>
+	</div>
 
-<h3>boolean CameraFinish ()</h3>
-<p>Finishes the cinematic camera and enables normal input.</p>
-<p>Always returns true.</p>
-
-<h3>boolean CameraCancelled ()</h3>
-<p>Returns true if the player canceled the cinematic. Returns false otherwise.</p>
+	<div class="function">
+		<h3>AddHealth ( handle h, number health )</h3>
+		<p>Adds to the current health of the game object.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_29">Info Display</label>
-<input id="_29" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="AmmoValues">Ammo Values</label>
+<input id="AmmoValues" type="checkbox">
 <div>
+	<p>These functions get and set ammo values on a game object.</p>
 
-<h3>boolean IsInfo ( string odfname )</h3>
-<p>Returns true if the game object inspected by the info display matches the given odf name.</p>
+	<div class="function">
+		<h3>number GetAmmo ( handle h )</h3>
+		<p>Returns the fractional ammo of the game object between 0 and 1.</p>
+	</div>
+
+	<div class="function">
+		<h3>number GetCurAmmo ( handle h )</h3>
+		<p>Returns the current ammo value of the game object.</p>
+	</div>
+
+	<div class="function">
+		<h3>number GetMaxAmmo ( handle h )</h3>
+		<p>Returns the maximum ammo value of the game object.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetCurAmmo ( handle h, number ammo )</h3>
+		<p>Sets the current ammo of the game object.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetMaxAmmo ( handle h, number ammo )</h3>
+		<p>Sets the maximum ammo of the game object.</p>
+	</div>
+
+	<div class="function">
+		<h3>AddAmmo ( handle h, number ammo )</h3>
+		<p>Adds to the current ammo of the game object.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_30">Network</label>
-<input id="_30" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="CinematicCamera">Cinematic Camera</label>
+<input id="CinematicCamera" type="checkbox">
 <div>
-<p>LuaMission currently has limited network support, but can detect if the 
-mission is being run in multiplayer and if the local machine is hosting.</p>
+	<p>These functions control the cinematic camera for in-engine cut scenes (or "cineractives" as the Interstate '76 team at Activision called them).</p>
 
-<h3>boolean IsNetGame ()</h3>
-<p>Returns true if the game is a network game. Returns false otherwise.</p>
+	<div class="function">
+		<h3>boolean CameraReady ()</h3>
+		<p>Starts the cinematic camera and disables normal input.</p>
+		<p>Always returns true.</p>
+	</div>
 
-<h3>boolean IsHosting ()</h3>
-<p>Returns true if the local machine is hosting a network game. Returns false otherwise.</p>
+	<div class="function">
+		<h3>boolean CameraPath ( string path, integer height, integer speed, handle target )</h3>
+		<p>Moves a cinematic camera along a path at a given height and speed while looking at a target game object.</p>
+		<p>Returns true when the camera arrives at its destination. Returns false otherwise.</p>
+	</div>
 
-<h3>SetLocal ( handle h )</h3>
-<p>Sets the game object as local to the machine the script is running on, 
-transferring ownership from its original owner if it was remote. Important 
-safety tip: only call this on one machine at a time!</p>
+	<div class="function">
+		<h3>boolean CameraPathDir ( string path, integer height, integer speed )</h3>
+		<p>Moves a cinematic camera long a path at a given height and speed while looking along the path direction.</p>
+		<p>Returns true when the camera arrives at its destination. Returns false otherwise.</p>
+	</div>
 
-<h3>boolean IsLocal ()</h3>
-<p>Returns true if the game is local to the machine the script is running on. 
-Returns false otherwise.</p>
+	<div class="function">
+		<h3>boolean PanDone ()</h3>
+		<p>Returns true when the camera arrives at its destination. Returns false otherwise.</p>
+	</div>
 
-<h3>boolean IsRemote ()</h3>
-<p>Returns true if the game object is remote to the machine the script is 
-running on. Returns false otherwise.</p>
+	<div class="function">
+		<h3>boolean CameraObject ( handle base, integer right, integer up, integer forward, handle target )</h3>
+		<p>Offsets a cinematic camera from a base game object while looking at a target game object. The right, up, and forward offets are in centimeters.</p>
+		<p>Returns true if the base or handle game object does not exist. Returns false otherwise.</p>
+	</div>
 
-<h3>Send ( integer to, string type, ... )</h3>
-<p>Send a script-defined message across the network.</p>
-<p>To is the player network id of the recipient. None, nil, or 0 broadcasts to all players.</p>
-<p>Type is a one-character string indicating the script-defined message type.</p>
-<p>Other parameters will be sent as data and passed to the recipient's Receive function as parameters. Send supports nil, boolean, handle, integer, number, string, vector, and matrix data types. It does not support function, thread, or arbitrary userdata types.</p>
+	<div class="function">
+		<h3>boolean CameraFinish ()</h3>
+		<p>Finishes the cinematic camera and enables normal input.</p>
+		<p>Always returns true.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean CameraCancelled ()</h3>
+		<p>Returns true if the player canceled the cinematic. Returns false otherwise.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_31">Read ODF</label>
-<input id="_31" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="InfoDisplay">Info Display</label>
+<input id="InfoDisplay" type="checkbox">
 <div>
-<p>These functions read values from an external ODF, INI, or TRN file.</p>
-
-<h3>odfhandle OpenODF ( string filename )</h3>
-<p>Opens the named file as an ODF. If the file name has no extension, the function will append ".odf" automatically.</p>
-<p>If the file is not already open, the function reads in and parses the file 
-into an internal database. If you need to read values from it relatively 
-frequently, save the handle into a global variable to prevent it from closing.</p>
-<p>Returns the file handle if it succeeded. Returns nil if it failed.</p>
-
-<h3>boolean, boolean GetODFBool ( odfhandle odf, [ string section ], string label, [ boolean default ] )</h3>
-<p>Reads a boolean value from the named label in the named section of the ODF file. Use a nil section to read labels that aren't in a section.</p>
-<p>It considers values starting with 'Y', 'y', 'T', 't', or '1' to be true and value starting with 'N', 'n', 'F', 'f', or '0' to be false. Other values are considered undefined.</p>
-<p>If a value is not found or is undefined, it uses the default value. If no default value is given, the default value is false. </p>
-<p>Returns the value and whether the value was found.</p>
-
-<h3>integer, boolean GetODFInt ( odfhandle odf, [ string section ], string label, [ integer default ] )</h3>
-<p>Reads an integer value from the named label in thenamed section of the ODF file. Use nil as the section to read labels that aren't in a section. </p>
-<p>If no value is found, it uses the default value. If no default value is given, the default value is 0. </p>
-<p>Returns the value and whether the value was found.</p>
-
-<h3>number, boolean GetODFFloat ( odfhandle odf, [ string section ], string label, [ number default ] )</h3>
-<p>Reads a floating-point value from the named label in the named section of the ODF file. Use nil as the section to read labels that aren't in a section.</p>
-<p>If no value is found, it uses the default value. If no default value is given, the default value is 0.0.</p>
-<p>Returns the value and whether the value was found.</p>
-
-<h3>string, boolean GetODFString ( odfhandle odf, [ string section ], string label, 
-[ string default ] )</h3>
-<p>Reads a string value from the named label in the named section of the ODF file. Use nil as the section to read labels that aren't in a section.</p>
-<p>If a value is not found, it uses the default value. If no default value is given, the default value is nil.</p>
-<p>Returns the value and whether the value was found.</p>
+	<div class="function">
+		<h3>boolean IsInfo ( string odfname )</h3>
+		<p>Returns true if the game object inspected by the info display matches the given odf name.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_32">Map</label>
-<input id="_32" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Network">Network</label>
+<input id="Network" type="checkbox">
 <div>
+	<p>LuaMission currently has limited network support, but can detect if the mission is being run in multiplayer and if the local machine is hosting.</p>
 
-<h3>string GetMapTRNFilename ()</h3>
-<p>Returns the name of the TRN file for the map. This can be used with OpenODF() to read values from the TRN file.</p>
+	<div class="function">
+		<h3>boolean IsNetGame ()</h3>
+		<p>Returns true if the game is a network game. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsHosting ()</h3>
+		<p>Returns true if the local machine is hosting a network game. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>SetLocal ( handle h )</h3>
+		<p>Sets the game object as local to the machine the script is running on, transferring ownership from its original owner if it was remote. Important safety tip: only call this on one machine at a time!</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsLocal ()</h3>
+		<p>Returns true if the game is local to the machine the script is running on. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>boolean IsRemote ()</h3>
+		<p>Returns true if the game object is remote to the machine the script is running on. Returns false otherwise.</p>
+	</div>
+
+	<div class="function">
+		<h3>Send ( integer to, string type, ... )</h3>
+		<p>Send a script-defined message across the network.</p>
+		<p>To is the player network id of the recipient. None, nil, or 0 broadcasts to all players.</p>
+		<p>Type is a one-character string indicating the script-defined message type.</p>
+		<p>Other parameters will be sent as data and passed to the recipient's Receive function as parameters. Send supports nil, boolean, handle, integer, number, string, vector, and matrix data types. It does not support function, thread, or arbitrary userdata types.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_33">Terrain</label>
-<input id="_33" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="ReadODF">Read ODF</label>
+<input id="ReadODF" type="checkbox">
 <div>
-<p>These functions return height and normal from the terrain height field.</p>
+	<p>These functions read values from an external ODF, INI, or TRN file.</p>
 
-<h3>number, vector GetTerrainHeightAndNormal ( handle h )</h3>
-<p>Returns the terrain height and normal vector at the location of the game object.</p>
-<p>Does not seem to be working at the moment. Use GetFloorHeightAndNormal(GetPosition(h)) as a workaround.</p>
+	<div class="function">
+		<h3>odfhandle OpenODF ( string filename )</h3>
+		<p>Opens the named file as an ODF. If the file name has no extension, the function will append ".odf" automatically.</p>
+		<p>If the file is not already open, the function reads in and parses the file into an internal database. If you need to read values from it relatively frequently, save the handle into a global variable to prevent it from closing.</p>
+		<p>Returns the file handle if it succeeded. Returns nil if it failed.</p>
+	</div>
 
-<h3>number, vector GetTerrainHeightAndNormal ( string path [, integer point ] )</h3>
-<p>Returns the terrain height and normal vector at a point on the named path. It uses the start of the path if no point is given.</p>
+	<div class="function">
+		<h3>boolean, boolean GetODFBool ( odfhandle odf, [ string section ], string label, [ boolean default ] )</h3>
+		<p>Reads a boolean value from the named label in the named section of the ODF file. Use a nil section to read labels that aren't in a section.</p>
+		<p>It considers values starting with 'Y', 'y', 'T', 't', or '1' to be true and value starting with 'N', 'n', 'F', 'f', or '0' to be false. Other values are considered undefined.</p>
+		<p>If a value is not found or is undefined, it uses the default value. If no default value is given, the default value is false. </p>
+		<p>Returns the value and whether the value was found.</p>
+	</div>
 
-<h3>number, vector GetTerrainHeightAndNormal ( vector position )</h3>
-<p>Returns the terrain height and normal vector at the position vector.</p>
+	<div class="function">
+		<h3>integer, boolean GetODFInt ( odfhandle odf, [ string section ], string label, [ integer default ] )</h3>
+		<p>Reads an integer value from the named label in thenamed section of the ODF file. Use nil as the section to read labels that aren't in a section. </p>
+		<p>If no value is found, it uses the default value. If no default value is given, the default value is 0. </p>
+		<p>Returns the value and whether the value was found.</p>
+	</div>
 
-<h3>number, vector GetTerrainHeightAndNormal ( matrix transform )</h3>
-<p>Returns the terrain height and normal vector at the position of the transform matrix.</p>
+	<div class="function">
+		<h3>number, boolean GetODFFloat ( odfhandle odf, [ string section ], string label, [ number default ] )</h3>
+		<p>Reads a floating-point value from the named label in the named section of the ODF file. Use nil as the section to read labels that aren't in a section.</p>
+		<p>If no value is found, it uses the default value. If no default value is given, the default value is 0.0.</p>
+		<p>Returns the value and whether the value was found.</p>
+	</div>
+
+	<div class="function">
+		<h3>string, boolean GetODFString ( odfhandle odf, [ string section ], string label, [ string default ] )</h3>
+		<p>Reads a string value from the named label in the named section of the ODF file. Use nil as the section to read labels that aren't in a section.</p>
+		<p>If a value is not found, it uses the default value. If no default value is given, the default value is nil.</p>
+		<p>Returns the value and whether the value was found.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_34">Floor</label>
-<input id="_34" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Map">Map</label>
+<input id="Map" type="checkbox">
 <div>
-<p>These functions return height and normal from the terrain height field and the upward-facing polygons of any entities marked as floor owners.</p>
-
-<h3>number, vector GetFloorHeightAndNormal ( handle h )</h3>
-<p>Returns the floor height and normal vector at the location of the game object.</p>
-<p>Does not seem to be working at the moment. Use GetFloorHeightAndNormal(GetPosition(h)) as a workaround.</p>
-
-<h3>number, vector GetFloorHeightAndNormal ( string path [, integer point ] )</h3>
-<p>Returns the floor height and normal vector at a point on the named path. It uses the start of the path if no point is given.</p>
-
-<h3>number, vector GetFloorHeightAndNormal ( vector position )</h3>
-<p>Returns the floor height and normal vector at the position vector.</p>
-
-<h3>number, vector GetFloorHeightAndNormal ( matrix transform )</h3>
-<p>Returns the floor height and normal vector at the position of the transform matrix.</p>
+	<div class="function">
+		<h3>string GetMapTRNFilename ()</h3>
+		<p>Returns the name of the TRN file for the map. This can be used with OpenODF() to read values from the TRN file.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_35">Vector</label>
-<input id="_35" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Terrain">Terrain</label>
+<input id="Terrain" type="checkbox">
 <div>
-<p>This is a custom userdata representing a position or direction. It has three number components: x, y, and z.</p>
+	<p>These functions return height and normal from the terrain height field.</p>
 
-<h3>vector SetVector ( [ number x ], [ number y ], [ number z ] )</h3>
-<p>Returns a vector whose components have the given number values. If no value is given for a component, the default value is 0.0.</p>
+	<div class="function">
+		<h3>number, vector GetTerrainHeightAndNormal ( handle h )</h3>
+		<p>Returns the terrain height and normal vector at the location of the game object.</p>
+		<p>Does not seem to be working at the moment. Use GetFloorHeightAndNormal(GetPosition(h)) as a workaround.</p>
+	</div>
 
-<h3>number DotProduct ( vector a, vector a )</h3>
-<p>Returns the <a href="http://en.wikipedia.org/wiki/Dot_product">dot product</a> between vectors a and b.</p>
-<p>Equivalent to a.x * b.x + a.y * b.y + a.z * b.z.</p>
+	<div class="function">
+		<h3>number, vector GetTerrainHeightAndNormal ( string path [, integer point ] )</h3>
+		<p>Returns the terrain height and normal vector at a point on the named path. It uses the start of the path if no point is given.</p>
+	</div>
 
-<h3>vector CrossProduct ( vector a, vector b )</h3>
-<p>Returns the <a href="http://en.wikipedia.org/wiki/Cross_product">cross product</a> between vectors a and b.</p>
-<p>Equivalent to SetVector(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x).</p>
+	<div class="function">
+		<h3>number, vector GetTerrainHeightAndNormal ( vector position )</h3>
+		<p>Returns the terrain height and normal vector at the position vector.</p>
+	</div>
 
-<h3>vector Normalize ( vector v )</h3>
-<p>Returns the vector scaled to unit length.</p>
-<p>Equivalent to SetVector(v.x * scale, v.y * scale, v.z * scale) where scale is 1.0f / sqrt(v.x<sup>2</sup> + v.y<sup>2</sup> + v.z<sup>2</sup>).</p>
-
-<h3>number Length ( vector v )</h3>
-<p>Returns the length of the vector.</p>
-<p>Equivalent to sqrt(v.x<sup>2</sup> + v.y<sup>2</sup> + v.z<sup>2</sup>).</p>
-
-<h3>number LengthSquared ( vector v )</h3>
-<p>Returns the squared length of the vector.</p>
-<p>Equivalent to v.x<sup>2</sup> + v.y<sup>2</sup> + v.z<sup>2</sup>.</p>
-
-<h3>number Distance2D ( vector a, vector b )</h3>
-<p>Returns the 2D distance between vectors a and b.</p>
-<p>Equivalent to sqrt((b.x - a.x)<sup>2</sup> + (b.z - a.z)<sup>2</sup>).</p>
-
-<h3>number Distance2DSquared ( vector a, vector b )</h3>
-<p>Returns the squared 2D distance of the vector.</p>
-<p>Equivalent to (b.x - a.x)<sup>2</sup> + (b.z - a.z)<sup>2</sup>.</p>
-
-<h3>number Distance3D ( vector a, vector b )</h3>
-<p>Returns the 3D distance between vectors a and b.</p>
-<p>Equivalent to sqrt((b.x - a.x)<sup>2</sup> + (b.y - a.y)<sup>2</sup> + (b.z - a.z)<sup>2</sup>).</p>
-
-<h3>number Distance3DSquared ( vector a, vector b )</h3>
-<p>Returns the squared 3D distance of the vector.</p>
-<p>Equivalent to (b.x - a.x)<sup>2</sup> + (b.y - a.y)<sup>2</sup> + (b.z - a.z)<sup>2</sup>.</p>
-
-<h3>-vector</h3>
-<p>Negate the vector.</p>
-<p>Equivalent to SetVector(-vector.x, -vector.y, -vector.z).</p>
-
-<h3>vector1 + vector2</h3>
-<p>Add two vectors.</p>
-<p>Equivalent to SetVector(vector1.x + vector2.x, vector1.y + vector2.y, vector1.z + vector2.z).</p>
-
-<h3>vector1 - vector2</h3>
-<p>Subtract two vectors.</p>
-<p>Equivlent to SetVector(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z).</p>
-
-<h3>number * vector</h3>
-<p>Multiply a number by a vector.</p>
-<p>Equivalent to SetVector( number * vector.x, number * vector.y, number * vector.z).</p>
-
-<h3>vector * number</h3>
-<p>Multiply a vector by a number.</p>
-<p>Equivalent to SetVector(vector.x * number, vector.y * number, vector.z * number).</p>
-
-<h3>vector1 * vector2</h3>
-<p>Multiply two vectors.</p>
-<p>Equivlent to SetVector(vector1.x * vector2.x, vector1.y * vector2.y, vector1.z * vector2.z)</p>
-
-<h3>number / vector</h3>
-<p>Divide a number by a vector.</p>
-<p>Equivalent to SetVector( number / vector.x, number / vector.y, number / vector.z).</p>
-
-<h3>vector / number</h3>
-<p>Divide a vector by a number.</p>
-<p>Equivalent to SetVector(vector.x / number, vector.y / number, vector.z / number).</p>
-
-<h3>vector1 / vector2</h3>
-<p>Divide two vectors.</p>
-<p>Equivlent to SetVector(vector1.x / vector2.x, vector1.y / vector2.y, vector1.z / vector2.z)</p>
-
-<h3>vector1 == vector2</h3>
-<p>Check if two vectors are equal.</p>
-
-<h3>vector1 ~= vector2</h3>
-<p>Check if two vectors are not equal.</p>
+	<div class="function">
+		<h3>number, vector GetTerrainHeightAndNormal ( matrix transform )</h3>
+		<p>Returns the terrain height and normal vector at the position of the transform matrix.</p>
+	</div>
 </div>
 
-<label class="collapse" for="_36">Matrix</label>
-<input id="_36" type="checkbox">
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Floor">Floor</label>
+<input id="Floor" type="checkbox">
 <div>
-<p>This is a custom userdata representing an orientation and position in space. It has four vector components (right, up, front, and posit) sharing space with twelve number components (right_x, right_y, right_z, up_x, up_y, up_z, front_x, front_y, front_z, posit_x, posit_y, posit_z).</p>
+	<p>These functions return height and normal from the terrain height field and the upward-facing polygons of any entities marked as floor owners.</p>
 
-<h3>matrix SetMatrix ( [ number right_x ], [ number right_y ], [ number right_z ], [ number up_x ], [ number up_y ], [ number up_z ], [ number front_x ], [ number front_y ], [ number front_z ], [ number posit_x ], [ number posit_y ], [ number posit_z ] )</h3>
-<p>Returns a matrix whose componets have the given number values. If no value is given for a component, the default value is zero. Be careful with this since it's easy to build a non-orthonormal matrix that will break all kinds of built-in assumptions.</p>
+	<div class="function">
+		<h3>number, vector GetFloorHeightAndNormal ( handle h )</h3>
+		<p>Returns the floor height and normal vector at the location of the game object.</p>
+		<p>Does not seem to be working at the moment. Use GetFloorHeightAndNormal(GetPosition(h)) as a workaround.</p>
+	</div>
 
-<h3>matrix IdentityMatrix</h3>
-<p>Global value representing the identity matrix.</p>
-<p>Equivalent to SetMatrix(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0).</p>
+	<div class="function">
+		<h3>number, vector GetFloorHeightAndNormal ( string path [, integer point ] )</h3>
+		<p>Returns the floor height and normal vector at a point on the named path. It uses the start of the path if no point is given.</p>
+	</div>
 
-<h3>matrix BuildAxisRotationMatrix ( [ number angle ], [ number axis_x ], [ number axis_y ], [ number axis_z ] )</h3>
-<p>Build a matrix representing a rotation by an angle around an axis. The angle is in radians. If no value is given for the angle or an axis component, the default value is zero. The axis must be unit-length (i.e. axis_x<sup>2</sup> + axis_y<sup>2</sup> + axis_z<sup>2</sup> = 1.0 or the resulting matrix will be wrong.</p>
+	<div class="function">
+		<h3>number, vector GetFloorHeightAndNormal ( vector position )</h3>
+		<p>Returns the floor height and normal vector at the position vector.</p>
+	</div>
 
-<h3>matrix BuildAxisRotationMatrix ( [ number angle ], vector axis )</h3>
-<p>Build a matrix representing a rotation by an angle around an axis. The angle is in radians. If no value is given for the angle, the default value is zero. The axis must be unit-length (i.e. axis.x<sup>2</sup> + axis.y<sup>2</sup> + axis.z<sup>2</sup> = 1.0 or the resulting matrix will be wrong.</p>
+	<div class="function">
+		<h3>number, vector GetFloorHeightAndNormal ( matrix transform )</h3>
+		<p>Returns the floor height and normal vector at the position of the transform matrix.</p>
+	</div>
+</div>
 
-<h3>matrix BuildPositionRotationMatrix ( [ number pitch ], [ number yaw ], [ number roll ], [ number posit_x ], [ posit_y ], [ posit_z ] )</h3>
-<p>Build a matrix with the given pitch, yaw, and roll angles and position. The angles are in radians. If no value is given for a component, the default value is zero.</p>
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Vector">Vector</label>
+<input id="Vector" type="checkbox">
+<div>
+	<p>This is a custom userdata representing a position or direction. It has three number components: x, y, and z.</p>
 
-<h3>matrix BuildPositionRotationMatrix ( [ number pitch ], [ number yaw ], [ number roll ], vector position )</h3>
-<p>Build a matrix with the given pitch, yaw, and roll angles and position. The angles are in radians. If no value is given for a component, the default value is zero.</p>
+	<div class="function">
+		<h3>vector SetVector ( [ number x ], [ number y ], [ number z ] )</h3>
+		<p>Returns a vector whose components have the given number values. If no value is given for a component, the default value is 0.0.</p>
+	</div>
 
-<h3>matrix BuildOrthogonalMatrix ( [ vector up ], [ vector heading ] )</h3>
-<p>Build a matrix with zero position, its up axis along the specified up vector, oriented so that its front axis points as close as possible to the heading vector. If up is not specified, the default value is the Y axis. If heading is not specified, the default value is the Z axis.</p>
+	<div class="function">
+		<h3>number DotProduct ( vector a, vector a )</h3>
+		<p>Returns the <a href="http://en.wikipedia.org/wiki/Dot_product">dot product</a> between vectors a and b.</p>
+		<p>Equivalent to a.x * b.x + a.y * b.y + a.z * b.z.</p>
+	</div>
 
-<h3>matrix BuildDirectionalMatrix ( [ vector position ], [ vector direction ] )</h3>
-<p>Build a matrix with the given position vector, its front axis pointing along the direction vector, and zero roll. If position is not specified, the default value is a zero vector. If direction is not specified, the default value is the Z axis.</p>
+	<div class="function">
+		<h3>vector CrossProduct ( vector a, vector b )</h3>
+		<p>Returns the <a href="http://en.wikipedia.org/wiki/Cross_product">cross product</a> between vectors a and b.</p>
+		<p>Equivalent to SetVector(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x).</p>
+	</div>
 
-<h3>matrix * matrix</h3>
-<p>Multiply two matrices.</p>
+	<div class="function">
+		<h3>vector Normalize ( vector v )</h3>
+		<p>Returns the vector scaled to unit length.</p>
+		<p>Equivalent to SetVector(v.x * scale, v.y * scale, v.z * scale) where scale is 1.0f / sqrt(v.x<sup>2</sup> + v.y<sup>2</sup> + v.z<sup>2</sup>).</p>
+	</div>
 
-<h3>matrix * vector</h3>
-<p>Transform a vector by a matrix.</p>
+	<div class="function">
+		<h3>number Length ( vector v )</h3>
+		<p>Returns the length of the vector.</p>
+		<p>Equivalent to sqrt(v.x<sup>2</sup> + v.y<sup>2</sup> + v.z<sup>2</sup>).</p>
+	</div>
+
+	<div class="function">
+		<h3>number LengthSquared ( vector v )</h3>
+		<p>Returns the squared length of the vector.</p>
+		<p>Equivalent to v.x<sup>2</sup> + v.y<sup>2</sup> + v.z<sup>2</sup>.</p>
+	</div>
+
+	<div class="function">
+		<h3>number Distance2D ( vector a, vector b )</h3>
+		<p>Returns the 2D distance between vectors a and b.</p>
+		<p>Equivalent to sqrt((b.x - a.x)<sup>2</sup> + (b.z - a.z)<sup>2</sup>).</p>
+	</div>
+
+	<div class="function">
+		<h3>number Distance2DSquared ( vector a, vector b )</h3>
+		<p>Returns the squared 2D distance of the vector.</p>
+		<p>Equivalent to (b.x - a.x)<sup>2</sup> + (b.z - a.z)<sup>2</sup>.</p>
+	</div>
+
+	<div class="function">
+		<h3>number Distance3D ( vector a, vector b )</h3>
+		<p>Returns the 3D distance between vectors a and b.</p>
+		<p>Equivalent to sqrt((b.x - a.x)<sup>2</sup> + (b.y - a.y)<sup>2</sup> + (b.z - a.z)<sup>2</sup>).</p>
+	</div>
+
+	<div class="function">
+		<h3>number Distance3DSquared ( vector a, vector b )</h3>
+		<p>Returns the squared 3D distance of the vector.</p>
+		<p>Equivalent to (b.x - a.x)<sup>2</sup> + (b.y - a.y)<sup>2</sup> + (b.z - a.z)<sup>2</sup>.</p>
+	</div>
+
+	<div class="function">
+		<h3>-vector</h3>
+		<p>Negate the vector.</p>
+		<p>Equivalent to SetVector(-vector.x, -vector.y, -vector.z).</p>
+	</div>
+
+	<div class="function">
+		<h3>vector1 + vector2</h3>
+		<p>Add two vectors.</p>
+		<p>Equivalent to SetVector(vector1.x + vector2.x, vector1.y + vector2.y, vector1.z + vector2.z).</p>
+	</div>
+
+	<div class="function">
+		<h3>vector1 - vector2</h3>
+		<p>Subtract two vectors.</p>
+		<p>Equivlent to SetVector(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z).</p>
+	</div>
+
+	<div class="function">
+		<h3>number * vector</h3>
+		<p>Multiply a number by a vector.</p>
+		<p>Equivalent to SetVector( number * vector.x, number * vector.y, number * vector.z).</p>
+	</div>
+
+	<div class="function">
+		<h3>vector * number</h3>
+		<p>Multiply a vector by a number.</p>
+		<p>Equivalent to SetVector(vector.x * number, vector.y * number, vector.z * number).</p>
+	</div>
+
+	<div class="function">
+		<h3>vector1 * vector2</h3>
+		<p>Multiply two vectors.</p>
+		<p>Equivlent to SetVector(vector1.x * vector2.x, vector1.y * vector2.y, vector1.z * vector2.z)</p>
+	</div>
+
+	<div class="function">
+		<h3>number / vector</h3>
+		<p>Divide a number by a vector.</p>
+		<p>Equivalent to SetVector( number / vector.x, number / vector.y, number / vector.z).</p>
+	</div>
+
+	<div class="function">
+		<h3>vector / number</h3>
+		<p>Divide a vector by a number.</p>
+		<p>Equivalent to SetVector(vector.x / number, vector.y / number, vector.z / number).</p>
+	</div>
+
+	<div class="function">
+		<h3>vector1 / vector2</h3>
+		<p>Divide two vectors.</p>
+		<p>Equivlent to SetVector(vector1.x / vector2.x, vector1.y / vector2.y, vector1.z / vector2.z)</p>
+	</div>
+
+	<div class="function">
+		<h3>vector1 == vector2</h3>
+		<p>Check if two vectors are equal.</p>
+	</div>
+
+	<div class="function">
+		<h3>vector1 ~= vector2</h3>
+		<p>Check if two vectors are not equal.</p>
+	</div>
+</div>
+
+<!--
+<a href="#top" class="arrowUp"></a>
+-->
+<label class="collapse" for="Matrix">Matrix</label>
+<input id="Matrix" type="checkbox">
+<div>
+	<p>This is a custom userdata representing an orientation and position in space. It has four vector components (right, up, front, and posit) sharing space with twelve number components (right_x, right_y, right_z, up_x, up_y, up_z, front_x, front_y, front_z, posit_x, posit_y, posit_z).</p>
+
+	<div class="function">
+		<h3>matrix SetMatrix ( [ number right_x ], [ number right_y ], [ number right_z ], [ number up_x ], [ number up_y ], [ number up_z ], [ number front_x ], [ number front_y ], [ number front_z ], [ number posit_x ], [ number posit_y ], [ number posit_z ] )</h3>
+		<p>Returns a matrix whose componets have the given number values. If no value is given for a component, the default value is zero. Be careful with this since it's easy to build a non-orthonormal matrix that will break all kinds of built-in assumptions.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix IdentityMatrix</h3>
+		<p>Global value representing the identity matrix.</p>
+		<p>Equivalent to SetMatrix(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0).</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix BuildAxisRotationMatrix ( [ number angle ], [ number axis_x ], [ number axis_y ], [ number axis_z ] )</h3>
+		<p>Build a matrix representing a rotation by an angle around an axis. The angle is in radians. If no value is given for the angle or an axis component, the default value is zero. The axis must be unit-length (i.e. axis_x<sup>2</sup> + axis_y<sup>2</sup> + axis_z<sup>2</sup> = 1.0 or the resulting matrix will be wrong.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix BuildAxisRotationMatrix ( [ number angle ], vector axis )</h3>
+		<p>Build a matrix representing a rotation by an angle around an axis. The angle is in radians. If no value is given for the angle, the default value is zero. The axis must be unit-length (i.e. axis.x<sup>2</sup> + axis.y<sup>2</sup> + axis.z<sup>2</sup> = 1.0 or the resulting matrix will be wrong.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix BuildPositionRotationMatrix ( [ number pitch ], [ number yaw ], [ number roll ], [ number posit_x ], [ posit_y ], [ posit_z ] )</h3>
+		<p>Build a matrix with the given pitch, yaw, and roll angles and position. The angles are in radians. If no value is given for a component, the default value is zero.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix BuildPositionRotationMatrix ( [ number pitch ], [ number yaw ], [ number roll ], vector position )</h3>
+		<p>Build a matrix with the given pitch, yaw, and roll angles and position. The angles are in radians. If no value is given for a component, the default value is zero.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix BuildOrthogonalMatrix ( [ vector up ], [ vector heading ] )</h3>
+		<p>Build a matrix with zero position, its up axis along the specified up vector, oriented so that its front axis points as close as possible to the heading vector. If up is not specified, the default value is the Y axis. If heading is not specified, the default value is the Z axis.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix BuildDirectionalMatrix ( [ vector position ], [ vector direction ] )</h3>
+		<p>Build a matrix with the given position vector, its front axis pointing along the direction vector, and zero roll. If position is not specified, the default value is a zero vector. If direction is not specified, the default value is the Z axis.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix * matrix</h3>
+		<p>Multiply two matrices.</p>
+	</div>
+
+	<div class="function">
+		<h3>matrix * vector</h3>
+		<p>Transform a vector by a matrix.</p>
+	</div>
 </div>
 
 </body></html>

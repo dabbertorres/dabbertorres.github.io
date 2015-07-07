@@ -1,12 +1,12 @@
 body
 {
-	background-color:black;
+	background-color: black;
 }
 
 h1
 {
-	color:#009F00;
-	background-color:#0F0F0F;
+	color: #009F00;
+	background-color: #0F0F0F;
 	border-left: 0.2em solid #005F00;
 	padding-left: 0.3em;
 	margin-top: 24px;
@@ -16,19 +16,25 @@ h1
 
 h2, label
 {
-	color:#009F00;
-	background-color:#0F0F0F;
+	color: #009F00;
+	background-color: #0F0F0F;
 	border-left: 0.2em solid #004F00;
 	padding-left: 0.3em;
 	margin-top: 24px;
 	margin-bottom: 8px;
 	font: 1.5em Impact,sans-serif;
+	position: relative;
+}
+
+label:hover
+{
+	color: #00FF00;
 }
 
 h3
 {
-	color:#009F00;
-	background-color:#0F0F0F;
+	color: #009F00;
+	background-color: #0F0F0F;
 	border-left: 0.2em solid #003F00;
 	padding-left: 0.3em;
 	margin-top: 24px;
@@ -38,8 +44,8 @@ h3
 
 h4
 {
-	color:#009F00;
-	background-color:#0F0F0F;
+	color: #009F00;
+	background-color: #0F0F0F;
 	border-left: 0.2em solid #002F00;
 	padding-left: 0.3em;
 	margin-top: 25px;
@@ -49,9 +55,10 @@ h4
 
 p
 {
-	color:white;
+	color: white;
 	margin-top: 12px;
 	margin-bottom: 8px;
+	margin-left: 0.5em;
 }
 
 ul
@@ -63,89 +70,130 @@ ul
 
 ul li:before
 {
-	content:'';
-	background-color:#009F00;
-	display:block;
-	position:absolute;
-	width:0.4em;
-	height:0.4em;
-	border-radius:0.4em;
-	left:-16px;
-	top:0.45em;
+	content: '';
+	background-color: #009F00;
+	display: block;
+	position: absolute;
+	width: 0.4em;
+	height: 0.4em;
+	border-radius: 0.4em;
+	left: -16px;
+	top: 0.45em;
 }
 
 ul li ul li:before
 {
-	background-color:#006F00;
-	width:0.3em;
-	height:0.3em;
-	border-radius:0.3em;
-	top:0.45em;
+	background-color: #006F00;
+	width: 0.3em;
+	height: 0.3em;
+	border-radius: 0.3em;
+	top: 0.45em;
 }
 
 ul li ul li ul li:before
 {
-	background-color:#003F00;
-	width:0.2em;
-	height:0.2em;
-	border-radius:0.2em;
-	top:0.45em;
+	background-color: #003F00;
+	width: 0.2em;
+	height: 0.2em;
+	border-radius: 0.2em;
+	top: 0.45em;
 }
 
 li
 {
-	color:white;
+	color: white;
 	margin-top: auto;
 	margin-bottom: auto;
-	position:relative;
+	position: relative;
 }
 
 table
 {
-	border-collapse:collapse;
-	border:3px solid #009F00;
+	border-collapse: collapse;
+	border: 3px solid #009F00;
 	margin-top: 12px;
 	margin-bottom: 8px;
 }
 
 th
 {
-	border:2px solid #009F00;
-	color:white;
-	background-color:#003F00;
-	padding:4px;
+	border: 2px solid #009F00;
+	color: white;
+	background-color: #003F00;
+	padding: 4px;
 }
 
 td
 {
-	border:2px solid #009F00;
-	color:white;
-	padding:4px;
+	border: 2px solid #009F00;
+	color: white;
+	padding: 4px;
 }
 
 pre
 {
-	color:white;
+	color: white;
 }
 
-a:link 
+a:link
 {
-	color:#00FF00;
+	color: #00FF00;
 }
 
 a:visited
 {
-	color:#007F00;
+	color: #007F00;
 }
 
 a:hover
 {
-	color:#FFFF00;
+	color: #FFFF00;
 }
 
 a:active
 {
-	color:#FFFFFF;
+	color: #FFFFFF;
+}
+
+/* go-to-top buttons */
+.arrowUp
+{
+	border-left: 7px solid transparent;
+	border-right: 7px solid transparent;
+	border-bottom: 10px solid #009F00;
+	margin: 0.2em;
+	display: block;
+	float: left;
+}
+
+.arrowUp:hover
+{
+	border-bottom: 10px solid #00FF00;
+	cursor: pointer;
+	cursor: hand;
+}
+
+/* Toggle collapse button */
+input[type=button]
+{
+	color: #009F00;
+	background-color: black;
+	border: 1px solid #009F00;
+	margin: 0.2em;
+	display: block;
+}
+
+input[type=button]:hover
+{
+	color: #00FF00;
+	cursor: pointer;
+	cursor: hand;
+}
+
+/* CSS specific to functions */
+.function
+{
+	margin-left: 3.0em;
 }
 
 /* Collapsible divs CSS */
@@ -154,17 +202,17 @@ a:active
 	display: block;
 }
 
-.collapse + input
+.collapse + input[type=checkbox]
 {
 	display: none;
 }
 
-.collapse + input + *
+.collapse + input[type=checkbox] + *
 {
 	display: none;
 }
 
-.collapse + input:checked + *
+.collapse + input[type=checkbox]:checked + *
 {
 	display: block;
 }
