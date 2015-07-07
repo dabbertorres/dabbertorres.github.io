@@ -1046,6 +1046,7 @@
 	<div class="function">
 		<h3>SucceedMission ( number time, [ string filename ] )</h3>
 		<p>Succeeds the mission after the given time elapses. If supplied with a filename (usually a .des), it sets the success message to text from that file.</p>
+		<p>Note: Seemingly a bit buggy at times. Workaround: Use an if statement to check for a time value, which then calls SucceedMission at the current time.</p>
 	</div>
 </div>
 
