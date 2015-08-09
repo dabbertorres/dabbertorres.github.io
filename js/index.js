@@ -1,28 +1,27 @@
 var main = function()
 {
-	// set font-size of header title dynamically
-	var title = $("#header #title");
-	var titleFontSize = parseInt(title.height()) + "px";
-	title.css("font-size", titleFontSize);
-	
-	var menuButtons = $("#header #menu a");
-	var menuButtonFontSize = (parseInt(menuButtons.height()) - 4) + "px";
-	menuButtons.css("font-size", menuButtonFontSize);
+	const Offset = 100;
+	const AnimTime = 100;
+
+	var menu = $("#header #menu");
+	var diff = menu.width() - $("#header #menu a").width();
+
+	console.log(diff);
 
 	$("#header #menu a").hover(
 		function()
 		{
 			$(this).animate(
 			{
-				top: "-=5%"
-			}, 100);
+				paddingLeft: diff + "px"
+			}, AnimTime);
 		},
 		function()
 		{
 			$(this).animate(
 			{
-				top: "+=5%"
-			}, 100);
+				paddingLeft: "0px"
+			}, AnimTime);
 		}
 	);
 }
