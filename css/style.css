@@ -52,11 +52,6 @@ h3
 	white-space: nowrap;
 }
 
-#header #menu a:hover
-{
-	text-align: right;
-}
-
 /* content css */
 #content
 {
