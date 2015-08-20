@@ -6,7 +6,7 @@
 
 html, body
 {
-	background: #59A8CC;
+	background: #dddddd;
 
 	height: 100%;
 	width: 100%;
@@ -19,11 +19,13 @@ a
 	text-decoration: none;
 	text-transform: lowercase;
 	color: #4D4D4D;
+	font-weight: bold;
 }
 
 a:hover
 {
-	color: #E5E5E5;
+	color: #FFFFFF;
+	font-weight: bold;
 }
 
 h3
@@ -45,8 +47,14 @@ h3
 
 #header #menu a
 {
-	display: block;
-	width: 50%;
+	display: table;
+	text-align: left;
+	white-space: nowrap;
+}
+
+#header #menu a:hover
+{
+	text-align: right;
 }
 
 /* content css */
