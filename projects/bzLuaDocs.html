@@ -1876,14 +1876,16 @@
 	<p>This is a custom userdata representing an orientation and position in space. It has four vector components (right, up, front, and posit) sharing space with twelve number components (right_x, right_y, right_z, up_x, up_y, up_z, front_x, front_y, front_z, posit_x, posit_y, posit_z).</p>
 
 	<div class="function">
-		<h3>matrix SetMatrix ( [ number right_x ], [ number right_y ], [ number right_z ], [ number up_x ], [ number up_y ], [ number up_z ], [ number front_x ], [ number front_y ], [ number front_z ], [ number posit_x ], [ number posit_y ], [ number posit_z ] )</h3>
+		<h3>matrix SetMatrix ([ number up_x ], [ number up_y ], [ number up_z ], [ number right_x ], [ number right_y ], [ number right_z ], [ number front_x ], [ number front_y ], [ number front_z ], [ number posit_x ], [ number posit_y ], [ number posit_z ] )</h3>
 		<p>Returns a matrix whose componets have the given number values. If no value is given for a component, the default value is zero. Be careful with this since it's easy to build a non-orthonormal matrix that will break all kinds of built-in assumptions.</p>
+		<p>To get:<br>[A,B,C]<br>[D,E,F]<br>[G,H,I]</p>
+		<p>Type SetMatrix(D,E,F,A,B,C,G,H,I)</p>
 	</div>
 
 	<div class="function">
 		<h3>matrix IdentityMatrix</h3>
 		<p>Global value representing the identity matrix.</p>
-		<p>Equivalent to SetMatrix(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0).</p>
+		<p>Equivalent to SetMatrix(0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0).</p>
 	</div>
 
 	<div class="function">
