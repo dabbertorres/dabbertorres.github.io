@@ -14,7 +14,7 @@ var main = function()
 		{
 			$(this).animate(
 			{
-				letterSpacing: "normal"
+				letterSpacing: "0em"
 			}, AnimTime);
 		}
 	);
