@@ -14,7 +14,7 @@ var main = function()
 		{
 			$(this).animate(
 			{
-				paddingLeft: "normal"
+				paddingLeft: "0em"
 			}, AnimTime);
 		}
 	);
