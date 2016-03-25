@@ -33,6 +33,18 @@ h3
 	padding-top: 1%;
 }
 
+p
+{
+	max-width: 50em;
+	word-wrap: break-word;
+	line-height: 1.5em;
+}
+
+p + p
+{
+	margin-top: 1em;
+}
+
 /* header css */
 #header
 {
