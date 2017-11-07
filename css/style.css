@@ -45,24 +45,24 @@ p + p
 	margin-top: 1em;
 }
 
-P + h3
+p + h3
 {
 	margin-top: 2em;
 }
 
 /* header css */
-#header
+header
 {
 	padding: 1%;
 	text-transform: lowercase;
 }
 
-#header #menu
+header #menu
 {
 	width: 10%;
 }
 
-#header #menu a
+header #menu a
 {
 	display: table;
 	text-align: left;
@@ -71,14 +71,14 @@ P + h3
 	transition: letter-spacing 100ms ease-out;
 }
 
-#header #menu a:hover
+header #menu a:hover
 {
 	letter-spacing: 1em;
 	transition: letter-spacing 100ms ease-in;
 }
 
 /* content css */
-#content
+main
 {
 	padding: 1%;
 }
